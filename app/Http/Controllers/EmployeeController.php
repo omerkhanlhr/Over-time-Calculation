@@ -11,8 +11,8 @@ class EmployeeController extends Controller
 {
     public function add_employee()
     {
-        $designations  = Designation::all();
-        return view('employees.add_employee',compact('designations'));
+
+        return view('employees.add_employee');
     }
     public function all_employees()
     {
@@ -30,40 +30,15 @@ class EmployeeController extends Controller
     {
         $validatedData = $request->validate([
             'employee_name' => 'required|string|max:255',
-            'employee_cnic' => 'required|string|size:13|unique:employees,cnic|regex:/^\d{13}$/',
             'email' => 'required|email|unique:employees,email',
-            'designation_id' => 'required|exists:designations,id',
-            'joining_date' => 'required|date',
-            'base_salary' => 'required|numeric|min:0',
-            'commission' => 'required|numeric|min:0',
-            'rent' => 'required|numeric|min:0',
-            'allowance' => 'required|numeric|min:0',
-            'deduction' => 'required|numeric|min:0',
-            'salary_month' => 'required|date_format:Y-m'
+            'phone' => 'required|numeric|unique:employees,phone'
         ]);
-
-        $sub_salary = $request->base_salary + $request->commission + $request->rent + $request->allowance;
-        $total_salary = $sub_salary - $request->deduction;
 
         $employee = new Employee();
-        $employee->emp_name = $request->employee_name;
-        $employee->cnic = $request->employee_cnic;
+        $employee->name = $request->employee_name;
         $employee->email = $request->email;
-        $employee->designation_id = $request->designation_id;
-        $employee->joining_date = $request->joining_date;
+        $employee->phone = $request->phone;
         $employee->save();
-
-        Salary::create([
-            'employee_id' => $employee->id,
-            'base_salary' => $request->base_salary,
-            'commission' => $request->commission,
-            'rent' => $request->rent,
-            'allowance' => $request->allowance,
-            'deduction' => $request->deduction,
-            'sub_salary' => $sub_salary,
-            'salary_month' => $request->salary_month . '-01',
-            'total_salary' => $total_salary
-        ]);
 
         $notification = array(
             'message' => 'Employee Added Successfully',
@@ -76,22 +51,20 @@ class EmployeeController extends Controller
     public function edit_employee($id)
     {
         $employee = Employee::findOrFail($id);
-        $designations = Designation::all();
-        return view('employees.edit_employee',compact('employee' , 'designations'));
+
+        return view('employees.edit_employee',compact('employee'));
     }
 
     public function update_employee(Request $request , $id)
     {
         $validatedData = $request->validate([
             'employee_name' => 'required|string|max:255',
-            'designation_id' => 'required|exists:designations,id',
-            'joining_date' => 'required|date',
+            'phone' => 'required|numeric',
         ]);
 
         $employee = Employee::findOrFail($id);
-        $employee->emp_name = $request->employee_name;
-        $employee->designation_id = $request->designation_id;
-        $employee->joining_date = $request->joining_date;
+        $employee->name = $request->employee_name;
+        $employee->phone = $request->phone;
         $employee->save();
 
         $notification = array(
@@ -124,23 +97,5 @@ class EmployeeController extends Controller
         }
     }
 
-    public function showPage()
-    {
-        $employees = Employee::all();
-        return view('employees_salaries.employee_salary', compact('employees'));
-    }
 
-    public function getEmployeeData(Request $request)
-    {
-        $employeeId = $request->employee_id;
-        $latestSalary = Salary::where('employee_id', $employeeId)->latest()->first();
-
-        return response()->json([
-            'base_salary' => $latestSalary->base_salary ?? '',
-            'rent' => $latestSalary->rent ?? '',
-            'allowance' => $latestSalary->allowance ?? '',
-            'commission' => $latestSalary->commission ?? '',
-            'deduction' => $latestSalary->deduction ?? '',
-        ]);
-    }
 }

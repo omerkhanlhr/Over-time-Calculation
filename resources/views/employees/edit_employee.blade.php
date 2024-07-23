@@ -17,21 +17,9 @@
                                 <label for="name" class="form-label">Employee Name</label>
                                 <input type="text"
                                     class="form-control"
-                                    name="employee_name" id="name" value="{{ old('employee_name', $employee->emp_name) }}">
+                                    name="employee_name" id="name" value="{{ old('employee_name', $employee->name) }}">
                                     <span class="text-danger">
                                         @error('employee_name')
-                                            {{$message}}
-                                        @enderror
-                                    </span>
-
-                            </div>
-                            <div class="form-group mb-3">
-                                <label for="name" class="form-label">Enter CNIC</label>
-                                <input type="disabled"
-                                    class="form-control"
-                                    name="employee_cnic" id="cnic" value="{{ old('employee_cnic', $employee->cnic) }}" pattern="\d{13}" placeholder="3310011122222" maxlength="13" disabled>
-                                    <span class="text-danger">
-                                        @error('employee_cnic')
                                             {{$message}}
                                         @enderror
                                     </span>
@@ -41,7 +29,7 @@
                                 <label for="name" class="form-label">Email</label>
                                 <input type="disabled"
                                     class="form-control"
-                                    name="email" id="email" value="{{ old('email', $employee->email) }}" disabled>
+                                    name="email" id="cnic" value="{{ old('email', $employee->email) }}" pattern="\d{13}" placeholder="3310011122222" maxlength="13" disabled>
                                     <span class="text-danger">
                                         @error('email')
                                             {{$message}}
@@ -49,26 +37,19 @@
                                     </span>
 
                             </div>
-                            <div class="form-group mb-3 mt-3">
-                                <label for="designation_id">Select Designation</label>
-                                <select name="designation_id" class="form-select" required>
-                                    <option value="" disabled>Select Designation</option>
-                                    @foreach($designations as $designation)
-                                            <option value="{{ $designation->id }}" {{ $designation->id == $employee->designation_id ? 'selected' : '' }}>{{ $designation->position }}</option>
-                                    @endforeach
-                                </select>
-                            </div>
-                            <div class="form-group mb-3 mt-3">
-                                <label for="joining_date">Joining Date</label>
-                                <input type="date" name="joining_date" class="form-control" value="{{ old('joining_date', $employee->joining_date) }}" required>
-                                <span class="text-danger">
-                                    @error('joining_date')
-                                    {{$message}}
-                                    @enderror
-                                </span>
-                            </div>
+                            <div class="form-group mb-3">
+                                <label for="name" class="form-label">Phone</label>
+                                <input type="number"
+                                    class="form-control"
+                                    name="phone" id="phone" value="{{ old('phone', $employee->phone) }}" disabled>
+                                    <span class="text-danger">
+                                        @error('phone')
+                                            {{$message}}
+                                        @enderror
+                                    </span>
 
-
+                            </div>
+                            
                             <button type="submit" class="btn btn-primary">Update Employee</button>
                         </form>
 

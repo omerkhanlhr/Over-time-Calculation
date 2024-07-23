@@ -40,7 +40,7 @@
                                 <label for="name" class="form-label">Company</label>
                                 <input type="text"
                                     class="form-control"
-                                    name="company" id="company" value="{{old('company')}}" placeholder="Optional.....">
+                                    name="company" id="company" value="{{old('company')}}">
                                     <span class="text-danger">
                                         @error('company')
                                             {{$message}}
@@ -48,16 +48,7 @@
                                     </span>
 
                             </div>
-                            <div class="form-group mb-3">
-                                <label for="name" class="form-label">Phone</label>
-                                <input type="tel" id="phone" name="phone" class="form-control" pattern="[0-9]{5}-[0-9]{7}-[0-9]{1}">
-                                    <span class="text-danger">
-                                        @error('phone')
-                                            {{$message}}
-                                        @enderror
-                                    </span>
 
-                            </div>
                             <div class="form-group mb-3">
                                 <label for="name" class="form-label">Address</label>
                                 <textarea name="address" id="address" class="form-control" rows="3">

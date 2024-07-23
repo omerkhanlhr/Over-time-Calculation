@@ -28,12 +28,11 @@ class ClientController extends Controller
         $req->validate([
             'name' => 'required',
             'email' => 'required|email',
-            'phone' => 'required',
+            'company' => 'required',
             'address' => 'required',
         ]);
 
-        $existingEmail = Client::where('contact_email', $req['email'])->first();
-        $existingPhone = Client::where('phone', $req['phone'])->first();
+        $existingEmail = Client::where('email', $req['email'])->first();
 
         if ($existingEmail) {
             $notification = array(
@@ -44,20 +43,11 @@ class ClientController extends Controller
             return redirect()->back()->with($notification);
         }
 
-        if ($existingPhone) {
-            $notification = array(
-                'message' => 'Phone number already exists.',
-                'alert-type' => 'error',
-            );
-
-            return redirect()->back()->with($notification);
-        }
 
         $client = new Client();
         $client->name = $req['name'];
-        $client->contact_email = $req['email'];
+        $client->email = $req['email'];
         $client->company = $req['company'];
-        $client->phone = $req['phone'];
         $client->address = $req['address'];
         $client->save();
 
@@ -86,9 +76,8 @@ class ClientController extends Controller
     {
         $client=Client::findOrFail($id);
         $client->name=$req['name'];
-        $client->contact_email=$req['email'];
+        $client->email=$req['email'];
         $client->company=$req['company'];
-        $client->phone=$req['phone'];
         $client->address=$req['address'];
         $client->save();
         $notification=array(
@@ -107,17 +96,28 @@ class ClientController extends Controller
     public function Deleteclient($id)
     {
         $client=Client::findOrFail($id);
-        $client->delete();
+
+        if($client)
+        {
+            $client->delete();
         $notification=array(
             'message'=>'Client Deleted Successfully',
             'alert-type'=>'success'
         );
         return redirect()->back()->with($notification);
+        }
+
+        else
+        {
+            $notification=array(
+                'message'=>'Something Went Wrong',
+                'alert-type'=>'error'
+            );
+            return redirect()->back()->with($notification);
+        }
+
+
     }
 
-    public function Viewinvoice($id)
-    {
-        $invoices=Invoice::where('client_id',$id)->get();
-        return view('clients.invoice',compact('invoices'));
-    }
+
 }

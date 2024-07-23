@@ -22,7 +22,8 @@
           <tr>
             <th>Sr.No.</th>
             <th>Name</th>
-            <th>Designation</th>
+            <th>Email</th>
+            <th>Phone</th>
             <th>Actions</th>
           </tr>
         </thead>
@@ -36,8 +37,9 @@
                 {{ $employee->id}}
             </a>
             </td>
-            <td>{{$employee->emp_name}}</td>
-            <td>{{$employee->designation->position}}</td>
+            <td>{{$employee->name}}</td>
+            <td>{{$employee->email}}</td>
+            <td>{{$employee->phone}}</td>
             <td>
                 <a href="{{route('edit.employee',$employee->id)}}" class="btn btn-inverse-warning"><i class="fa fa-edit" style="font-size:24px;color:yellow"></i></a>
                 <a href="{{route('delete.employee',$employee->id)}}" class="btn btn-inverse-danger" id="delete"><i class="fa fa-trash" style="font-size:24px;color:red"></i></a>

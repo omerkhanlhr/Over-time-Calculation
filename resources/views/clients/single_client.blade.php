@@ -16,26 +16,18 @@
             </div>
             <div class="mt-3">
               <label class="tx-11 fw-bolder mb-0 text-uppercase">Email</label>
-              <p class="text-muted">{{$client->contact_email}}</p>
+              <p class="text-muted">{{$client->email}}</p>
             </div>
             <div class="mt-3">
               <label class="tx-11 fw-bolder mb-0 text-uppercase">Company</label>
               <p class="text-muted">
-                @if($client->company=="")
-                {{"Null"}}
-                @else
+
                 {{$client->company}}
-                @endif
+
             </p>
             </div>
-            <div class="mt-3">
-              <label class="tx-11 fw-bolder mb-0 text-uppercase">Phone</label>
-              <p class="text-muted">{{$client->phone}}</p>
-            </div>
-            <div class="mt-3">
-              <label class="tx-11 fw-bolder mb-0 text-uppercase">Address</label>
-              <p class="text-muted">{{$client->address}}</p>
-            </div>
+           
+
           </div>
         </div>
       </div>

@@ -16,26 +16,6 @@ use Maatwebsite\Excel\Facades\Excel;
 
 class AdminController extends Controller
 {
-    // public function export_users()
-    // {
-    //     return Excel::download(new UsersExport, 'users.xlsx');
-    // }
-    // public function export_clients()
-    // {
-    //     return Excel::download(new ClientsExport, 'clients.xlsx');
-    // }
-    // public function export_payments()
-    // {
-    //     return Excel::download(new PaymentsExport, 'payments.xlsx');
-    // }
-    // public function export_invoices()
-    // {
-    //     return Excel::download(new InvoicesExport, 'invoices.xlsx');
-    // }
-    // public function export_products()
-    // {
-    //     return Excel::download(new ProductsExport, 'items.xlsx');
-    // }
 
     public function index()
     {

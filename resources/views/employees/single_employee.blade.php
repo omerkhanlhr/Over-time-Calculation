@@ -11,21 +11,18 @@
 
               <div>
 
-                <span class="h4 ms-3 text">{{ $employee->emp_name}}</span>
+                <span class="h4 ms-3 text">{{ $employee->name}}</span>
               </div>
             </div>
             <div class="mt-3">
-              <label class="tx-11 fw-bolder mb-0 text-uppercase">CNIC</label>
-              <p class="text-muted">{{$employee->cnic}}</p>
+              <label class="tx-11 fw-bolder mb-0 text-uppercase">Email</label>
+              <p class="text-muted">{{$employee->email}}</p>
             </div>
             <div class="mt-3">
-              <label class="tx-11 fw-bolder mb-0 text-uppercase">Designation</label>
-              <p class="text-muted">    {{ $employee->designation->position}}        </p>
+              <label class="tx-11 fw-bolder mb-0 text-uppercase">Phone</label>
+              <p class="text-muted">    {{ $employee->phone}}        </p>
             </div>
-            <div class="mt-3">
-              <label class="tx-11 fw-bolder mb-0 text-uppercase">Joining Date</label>
-              <p class="text-muted">{{ $employee->joining_date}}</p>
-            </div>
+            
 
           </div>
         </div>

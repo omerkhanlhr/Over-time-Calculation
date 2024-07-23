@@ -5,13 +5,13 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Employee extends Model
+class Client extends Model
 {
     use HasFactory;
 
-    protected $guarded=[];
+    protected $guarded =[];
 
-    protected $table="employees";
+    protected $table ="clients";
 
     public function workHours()
     {

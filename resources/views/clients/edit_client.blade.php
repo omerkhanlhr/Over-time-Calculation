@@ -24,7 +24,7 @@
                                 <label for="name" class="form-label">Email</label>
                                 <input type="email"
                                     class="form-control"
-                                    name="email" id="email" value="{{$client->contact_email}}">
+                                    name="email" id="email" value="{{$client->email}}">
 
 
                             </div>
@@ -35,11 +35,7 @@
                                     name="company" id="company" value="{{$client->company}}">
 
                             </div>
-                            <div class="form-group mb-3">
-                                <label for="name" class="form-label">Phone</label>
-                                <input type="tel" id="phone" name="phone" class="form-control" value="{{$client->phone}}" pattern="[0-9]{3}-[0-9]{2}-[0-9]{3}">
-
-                            </div>
+                          
                             <div class="form-group mb-3">
                                 <label for="name" class="form-label">Address</label>
                                 <textarea name="address" id="address" class="form-control" rows="3">

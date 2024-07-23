@@ -61,22 +61,22 @@
             </ul>
           </div>
         </li>
-        <li class="nav-item nav-category">Salaries</li>
+        <li class="nav-item nav-category">Clients</li>
         <li class="nav-item">
-          <a class="nav-link" data-bs-toggle="collapse" href="#salaries" role="button" aria-expanded="false" aria-controls="emails">
+          <a class="nav-link" data-bs-toggle="collapse" href="#clients" role="button" aria-expanded="false" aria-controls="emails">
             <i class="link-icon" data-feather="mail"></i>
-            <span class="link-title">Give Salaries</span>
+            <span class="link-title">Clients</span>
             <i class="link-arrow" data-feather="chevron-down"></i>
           </a>
-          <div class="collapse" id="salaries">
+          <div class="collapse" id="clients">
             <ul class="nav sub-menu">
               {{-- @if(Auth::user()->can('site.settings')) --}}
               <li class="nav-item">
-                <a href="{{route('#')}}" class="nav-link">Employee Salaries</a>
+                <a href="{{ route('all.clients') }}" class="nav-link">All Clients</a>
               </li>
 
               <li class="nav-item">
-                <a href="{{route('#')}}" class="nav-link">Salary Slips</a>
+                <a href="{{ route('add.client') }}" class="nav-link">Add Client</a>
               </li>
 
             </ul>
