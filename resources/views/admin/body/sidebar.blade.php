@@ -81,6 +81,26 @@
 
             </ul>
           </div>
+        <li class="nav-item nav-category">Work Hours</li>
+        <li class="nav-item">
+          <a class="nav-link" data-bs-toggle="collapse" href="#work_hours" role="button" aria-expanded="false" aria-controls="emails">
+            <i class="link-icon" data-feather="mail"></i>
+            <span class="link-title">WorkHour Details</span>
+            <i class="link-arrow" data-feather="chevron-down"></i>
+          </a>
+          <div class="collapse" id="work_hours">
+            <ul class="nav sub-menu">
+              {{-- @if(Auth::user()->can('site.settings')) --}}
+              <li class="nav-item">
+                <a href="{{ route('display.work.hours') }}" class="nav-link">WorkHours Details</a>
+              </li>
+
+              <li class="nav-item">
+                <a href="{{ route('add.work.hours') }}" class="nav-link">Add WorkHours</a>
+              </li>
+
+            </ul>
+          </div>
         </li>
 
       </ul>

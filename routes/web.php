@@ -39,7 +39,6 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::post('/update/user', [AdminController::class, 'updateUser'])->name('update.user');
     Route::get('/delete/user/{id}', [AdminController::class, 'deleteUser'])->name('delete.user');
     Route::get('/single/user/{id}', [AdminController::class, 'singleUser'])->name('single.user');
-    Route::get('/export/users', [AdminController::class, 'export_users'])->name('export.user');
 
 });
 
@@ -68,7 +67,6 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
         Route::get('/all/clients', 'allclient')->name('all.clients');
         Route::post('/store/client', 'Saveclient')->name('save.client');
         Route::post('/update/client/{id}', 'Updateclient')->name('update.client');
-        Route::get('/client/invoice/{id}', 'Viewinvoice')->name('view.invoice');
     });
 });
 
@@ -76,6 +74,10 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::controller(WorkHourController::class)->group(function () {
 
     Route::get('add-work-hours','create_workhour')->name('add.work.hours');
+    Route::post('store-work-hours','store_workhour')->name('store.work.hours');
+    Route::get('/search-clients', 'searchClients')->name('search.clients');
+    Route::get('/work-details', 'display')->name('display.work.hours');
+    Route::get('/search-employees',  'searchEmployees')->name('search.employees');
 
     });
 });

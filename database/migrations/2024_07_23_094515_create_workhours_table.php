@@ -20,7 +20,8 @@ return new class extends Migration
             $table->time('end_time');
             $table->integer('daily_overtime')->default(0);
             $table->integer('weekly_overtime')->default(0);
-            $table->boolean('is_overtime_notified')->default(false);
+            $table->boolean('overtime')->default(0);
+            $table->decimal('total_amount',10,2);
             $table->timestamps();
             $table->foreign('employee_id')->references('id')->on('employees')->onDelete('cascade')->onUpdate('cascade');
             $table->foreign('client_id')->references('id')->on('clients')->onDelete('cascade')->onUpdate('cascade');

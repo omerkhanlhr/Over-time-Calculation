@@ -1,4 +1,3 @@
-
 <html lang="en">
 <head>
 	<meta charset="UTF-8">
@@ -37,6 +36,10 @@
 
   <link rel="shortcut icon" href="{{ asset('backend/assets/images/favicon.png')}}" />
   <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.css" >
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.1.0-rc.0/css/select2.min.css">
+
 </head>
 <body>
 	<div class="main-wrapper">
@@ -65,7 +68,6 @@
 
 	<!-- Plugin js for this page -->
   <script src="{{ asset('backend/assets/vendors/flatpickr/flatpickr.min.js')}}"></script>
-  <script src="{{ asset('backend/assets/vendors/apexcharts/apexcharts.min.js')}}"></script>
 	<!-- End plugin js for this page -->
 
 	<!-- inject:js -->
@@ -106,5 +108,9 @@
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
   <script src="{{ asset('backend/assets/js/code/code.js')}}"></script>
   <script src="{{ asset('backend/assets/js/code/validate.min.js')}}"></script>
+<script src="{{ asset('js/inactivity.js') }}"></script>
+</body>
+</html>
+
 </body>
 </html>
