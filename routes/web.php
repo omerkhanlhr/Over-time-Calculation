@@ -74,10 +74,13 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::controller(WorkHourController::class)->group(function () {
 
     Route::get('add-work-hours','create_workhour')->name('add.work.hours');
+    Route::get('single-work-hours-details/{id}','single_Workdetails')->name('single.work.hours.details');
     Route::post('store-work-hours','store_workhour')->name('store.work.hours');
     Route::get('/search-clients', 'searchClients')->name('search.clients');
     Route::get('/work-details', 'display')->name('display.work.hours');
     Route::get('/search-employees',  'searchEmployees')->name('search.employees');
+    Route::get('/workhours/{id}/edit', 'edit')->name('edit.work.hours');
+Route::put('/workhours/{id}', 'update')->name('update.work.hours');
 
     });
 });

@@ -21,13 +21,10 @@
             <th>ID</th>
                                     <th>Client Name</th>
                                     <th>Employee Name</th>
-                                    <th>Date</th>
-                                    <th>Start Time</th>
-                                    <th>End Time</th>
-                                    <th>Daily Overtime</th>
-                                    <th>Weekly Overtime</th>
+                                    <th>Rate</th>
                                     <th>Overtime</th>
                                     <th>Total Amount</th>
+                                    <th>Actions</th>
 
           </tr>
         </thead>
@@ -37,13 +34,13 @@
                 <td>{{ $workhour->id }}</td>
                 <td>{{ $workhour->client->name }}</td>
                 <td>{{ $workhour->employee->name }}</td>
-                <td>{{ $workhour->work_date }}</td>
-                <td>{{ $workhour->start_time }}</td>
-                <td>{{ $workhour->end_time }}</td>
-                <td>{{ $workhour->daily_workhours }}</td>
-                <td>{{ $workhour->weekly_workhours }}</td>
+                <td>{{ $workhour->rate }}</td>
                 <td>{{ $workhour->overtime ? 'Yes' : 'No' }}</td>
                 <td>${{ $workhour->total_amount }}</td>
+                <td>
+                    <a href="{{route('edit.work.hours',$workhour->id)}}" class="btn btn-inverse-warning"><i class="fa fa-edit" style="font-size:24px;color:yellow"></i></a>
+                    <a href="{{route('single.work.hours.details',$workhour->id)}}" class="btn btn-inverse-warning"><i class="fa fa-eye" style="font-size:24px;color:yellow"></i></a>
+                </td>
             </tr>
         @endforeach
         </tbody>

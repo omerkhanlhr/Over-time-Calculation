@@ -21,7 +21,7 @@
         <li class="nav-item nav-category">ADMIN MANAGEMENT</li>
         <li class="nav-item">
           <a class="nav-link" data-bs-toggle="collapse" href="#admin" role="button" aria-expanded="false" aria-controls="emails">
-            <i class="link-icon" data-feather="mail"></i>
+            <i class="link-icon" data-feather="box"></i>
             <span class="link-title">Users</span>
             <i class="link-arrow" data-feather="chevron-down"></i>
           </a>
@@ -43,7 +43,7 @@
         <li class="nav-item nav-category">Employees</li>
         <li class="nav-item">
           <a class="nav-link" data-bs-toggle="collapse" href="#employee" role="button" aria-expanded="false" aria-controls="emails">
-            <i class="link-icon" data-feather="mail"></i>
+            <i class="link-icon" data-feather="box"></i>
             <span class="link-title">Employees</span>
             <i class="link-arrow" data-feather="chevron-down"></i>
           </a>
@@ -64,7 +64,7 @@
         <li class="nav-item nav-category">Clients</li>
         <li class="nav-item">
           <a class="nav-link" data-bs-toggle="collapse" href="#clients" role="button" aria-expanded="false" aria-controls="emails">
-            <i class="link-icon" data-feather="mail"></i>
+            <i class="link-icon" data-feather="box"></i>
             <span class="link-title">Clients</span>
             <i class="link-arrow" data-feather="chevron-down"></i>
           </a>
@@ -84,7 +84,7 @@
         <li class="nav-item nav-category">Work Hours</li>
         <li class="nav-item">
           <a class="nav-link" data-bs-toggle="collapse" href="#work_hours" role="button" aria-expanded="false" aria-controls="emails">
-            <i class="link-icon" data-feather="mail"></i>
+            <i class="link-icon" data-feather="box"></i>
             <span class="link-title">WorkHour Details</span>
             <i class="link-arrow" data-feather="chevron-down"></i>
           </a>

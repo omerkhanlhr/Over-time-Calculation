@@ -18,14 +18,15 @@ return new class extends Migration
             $table->date('work_date');
             $table->time('start_time');
             $table->time('end_time');
-            $table->integer('daily_overtime')->default(0);
-            $table->integer('weekly_overtime')->default(0);
+            $table->time('daily_workhours');
+            $table->time('weekly_workhours');
+            $table->time('daily_overtime')->default('00:00');
+            $table->time('weekly_overtime')->default('00:00');
             $table->boolean('overtime')->default(0);
-            $table->decimal('total_amount',10,2);
+            $table->decimal('total_amount', 10, 2);
             $table->timestamps();
             $table->foreign('employee_id')->references('id')->on('employees')->onDelete('cascade')->onUpdate('cascade');
             $table->foreign('client_id')->references('id')->on('clients')->onDelete('cascade')->onUpdate('cascade');
-
         });
     }
 
