@@ -25,24 +25,31 @@ class WorkHourController extends Controller
     }
 
     public function store_workhour(Request $request)
-    {
-        // Validate the request
-        $request->validate([
-            'client_id' => 'required|exists:clients,id',
-            'employee_id' => 'required|exists:employees,id',
-            'date' => 'required|date',
-            'rate' => 'required|numeric|min:0',
-            'check_in_time' => 'required|date_format:H:i',
-            'check_out_time' => 'required|date_format:H:i|after:check_in_time',
-        ]);
+{
+    // Validate the request
+    $request->validate([
+        'client_id' => 'required|exists:clients,id',
+        'employee_id.*' => 'required|exists:employees,id',
+        'date.*' => 'required|date',
+        'rate.*' => 'required|numeric|min:0',
+        'check_in_time.*' => 'required|date_format:H:i',
+        'check_out_time.*' => 'required|date_format:H:i',
+    ]);
 
-        // Calculate working hours and overtime
-        $checkIn = new \DateTime($request->date . ' ' . $request->check_in_time);
-        $checkOut = new \DateTime($request->date . ' ' . $request->check_out_time);
+
+
+    foreach ($request->employee_id as $index => $employeeId) {
+        $checkIn = new \DateTime($request->date[$index] . ' ' . $request->check_in_time[$index]);
+        $checkOut = new \DateTime($request->date[$index] . ' ' . $request->check_out_time[$index]);
+
+        if ($checkOut <= $checkIn) {
+            $checkOut->modify('+1 day');
+        }
+
         $interval = $checkIn->diff($checkOut);
 
         // Convert interval to hours and minutes
-        $hoursWorked = $interval->h;
+        $hoursWorked = $interval->h + ($interval->d * 24); // Include days if check-out is on the next day
         $minutesWorked = $interval->i;
 
         // Determine if overtime is applicable
@@ -54,7 +61,7 @@ class WorkHourController extends Controller
         }
 
         // Fetch the existing weekly work hours
-        $existingWeeklyWorkhours = Workhour::where('employee_id', $request->employee_id)
+        $existingWeeklyWorkhours = Workhour::where('employee_id', $employeeId)
             ->whereBetween('work_date', [now()->startOfWeek(), now()->endOfWeek()])
             ->sum(DB::raw("TIME_TO_SEC(daily_workhours)"));
 
@@ -63,30 +70,34 @@ class WorkHourController extends Controller
         $weeklyWorkhours = gmdate('H:i', $totalWeeklyWorkhoursInSeconds);
 
         // Calculate the total amount
-        $totalAmount = ($hoursWorked + $minutesWorked / 60) * $request->rate;
+        $totalAmount = ($hoursWorked + $minutesWorked / 60) * $request->rate[$index];
 
         // Store the work hours in the database
         $workhour = new Workhour();
-        $workhour->employee_id = $request->employee_id;
+        $workhour->employee_id = $employeeId;
         $workhour->client_id = $request->client_id;
-        $workhour->work_date = $request->date;
-        $workhour->start_time = $request->check_in_time;
-        $workhour->end_time = $request->check_out_time;
+        $workhour->work_date = $request->date[$index];
+        $workhour->start_time = $request->check_in_time[$index];
+        $workhour->end_time = $request->check_out_time[$index];
         $workhour->daily_workhours = sprintf('%02d:%02d', $hoursWorked, $minutesWorked);
         $workhour->weekly_workhours = $weeklyWorkhours;
         $workhour->daily_overtime = sprintf('%02d:%02d', $dailyOvertimeHours, $dailyOvertimeMinutes);
         $workhour->overtime = ($dailyOvertimeHours > 0 || $dailyOvertimeMinutes > 0) ? 1 : 0;
-        $workhour->rate = $request->rate;
+        $workhour->rate = $request->rate[$index];
         $workhour->total_amount = $totalAmount;
         $workhour->save();
-
-        $notification = array(
-            'message' => 'Work Hours Added Successfully',
-            'alert-type' => 'success',
-        );
-
-        return redirect()->route('display.work.hours')->with($notification);
     }
+
+    $notification = array(
+        'message' => 'Work Hours Added Successfully',
+        'alert-type' => 'success',
+    );
+
+    return redirect()->route('display.work.hours')->with($notification);
+}
+
+
+
 
 
     public function searchClients(Request $request)
