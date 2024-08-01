@@ -26,7 +26,6 @@ class WorkHourController extends Controller
 
     public function store_workhour(Request $request)
 {
-    // Validate the request
     $request->validate([
         'client_id' => 'required|exists:clients,id',
         'employee_id.*' => 'required|exists:employees,id',
@@ -34,9 +33,8 @@ class WorkHourController extends Controller
         'rate.*' => 'required|numeric|min:0',
         'check_in_time.*' => 'required|date_format:H:i',
         'check_out_time.*' => 'required|date_format:H:i',
+        'break_time.*' => 'nullable|integer|min:0', // Validate break time in minutes
     ]);
-
-
 
     foreach ($request->employee_id as $index => $employeeId) {
         $checkIn = new \DateTime($request->date[$index] . ' ' . $request->check_in_time[$index]);
@@ -52,12 +50,21 @@ class WorkHourController extends Controller
         $hoursWorked = $interval->h + ($interval->d * 24); // Include days if check-out is on the next day
         $minutesWorked = $interval->i;
 
+        // Subtract break time
+        $breakTimeMinutes = $request->break_time[$index] ?? 0; // Default to 0 if break time is null
+        $totalMinutesWorked = ($hoursWorked * 60) + $minutesWorked - $breakTimeMinutes;
+
+        // Recalculate hours and minutes after subtracting break time
+        $hoursWorked = intdiv($totalMinutesWorked, 60);
+        $minutesWorked = $totalMinutesWorked % 60;
+
         // Determine if overtime is applicable
         $dailyOvertimeHours = 0;
         $dailyOvertimeMinutes = 0;
         if ($hoursWorked >= 8) {
-            $dailyOvertimeHours = $hoursWorked - 8;
-            $dailyOvertimeMinutes = $minutesWorked;
+            $dailyOvertimeMinutes = ($hoursWorked - 8) * 60 + $minutesWorked;
+            $dailyOvertimeHours = intdiv($dailyOvertimeMinutes, 60);
+            $dailyOvertimeMinutes = $dailyOvertimeMinutes % 60;
         }
 
         // Fetch the existing weekly work hours
@@ -81,6 +88,7 @@ class WorkHourController extends Controller
         $workhour->end_time = $request->check_out_time[$index];
         $workhour->daily_workhours = sprintf('%02d:%02d', $hoursWorked, $minutesWorked);
         $workhour->weekly_workhours = $weeklyWorkhours;
+        $workhour->break_time = $breakTimeMinutes; // Store break time in minutes
         $workhour->daily_overtime = sprintf('%02d:%02d', $dailyOvertimeHours, $dailyOvertimeMinutes);
         $workhour->overtime = ($dailyOvertimeHours > 0 || $dailyOvertimeMinutes > 0) ? 1 : 0;
         $workhour->rate = $request->rate[$index];
@@ -95,7 +103,6 @@ class WorkHourController extends Controller
 
     return redirect()->route('display.work.hours')->with($notification);
 }
-
 
 
 
@@ -137,6 +144,7 @@ class WorkHourController extends Controller
         'employee_id' => 'required|exists:employees,id',
         'date' => 'required|date',
         'rate' => 'required|numeric|min:0',
+        'break_time' => 'required|integer|min:0', // Validate break time in minutes
     ]);
 
     $workhour = Workhour::findOrFail($id);
@@ -144,18 +152,32 @@ class WorkHourController extends Controller
     // Calculate working hours and overtime
     $checkIn = new \DateTime($request->date . ' ' . $request->check_in_time);
     $checkOut = new \DateTime($request->date . ' ' . $request->check_out_time);
+
+    if ($checkOut <= $checkIn) {
+        $checkOut->modify('+1 day');
+    }
+
     $interval = $checkIn->diff($checkOut);
 
     // Convert interval to hours and minutes
-    $hoursWorked = $interval->h;
+    $hoursWorked = $interval->h + ($interval->d * 24); // Include days if check-out is on the next day
     $minutesWorked = $interval->i;
+
+    // Subtract break time
+    $breakTimeMinutes = $request->break_time;
+    $totalMinutesWorked = ($hoursWorked * 60) + $minutesWorked - $breakTimeMinutes;
+
+    // Recalculate hours and minutes after subtracting break time
+    $hoursWorked = intdiv($totalMinutesWorked, 60);
+    $minutesWorked = $totalMinutesWorked % 60;
 
     // Determine if overtime is applicable
     $dailyOvertimeHours = 0;
     $dailyOvertimeMinutes = 0;
     if ($hoursWorked >= 8) {
-        $dailyOvertimeHours = $hoursWorked - 8;
-        $dailyOvertimeMinutes = $minutesWorked;
+        $dailyOvertimeMinutes = ($hoursWorked - 8) * 60 + $minutesWorked;
+        $dailyOvertimeHours = intdiv($dailyOvertimeMinutes, 60);
+        $dailyOvertimeMinutes = $dailyOvertimeMinutes % 60;
     }
 
     // Fetch the existing weekly work hours excluding the current record
@@ -178,6 +200,7 @@ class WorkHourController extends Controller
     $workhour->end_time = $request->check_out_time;
     $workhour->daily_workhours = sprintf('%02d:%02d', $hoursWorked, $minutesWorked);
     $workhour->weekly_workhours = $weeklyWorkhours;
+    $workhour->break_time = $breakTimeMinutes; // Store break time in minutes
     $workhour->daily_overtime = sprintf('%02d:%02d', $dailyOvertimeHours, $dailyOvertimeMinutes);
     $workhour->overtime = ($dailyOvertimeHours > 0 || $dailyOvertimeMinutes > 0) ? 1 : 0;
     $workhour->rate = $request->rate;
@@ -191,7 +214,6 @@ class WorkHourController extends Controller
 
     return redirect()->route('display.work.hours')->with($notification);
 }
-
 
 
     }

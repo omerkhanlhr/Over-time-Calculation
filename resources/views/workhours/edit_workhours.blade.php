@@ -60,6 +60,15 @@
                                 @enderror
                             </span>
                         </div>
+                        <div class="form-group mb-3">
+                            <label for="check_out_time">Break Time</label>
+                            <input type="number" name="break_time" id="break_time" class="form-control" value="{{ $workhour->break_time }}" required>
+                            <span class="text-danger">
+                                @error('break_time')
+                                {{$message}}
+                                @enderror
+                            </span>
+                        </div>
 
                         <button type="submit" class="btn btn-primary">Update Work Hours</button>
                     </form>

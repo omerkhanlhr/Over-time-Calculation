@@ -59,6 +59,14 @@
             </p>
             </div>
             <div class="mt-3">
+              <label class="tx-11 fw-bolder mb-0 text-uppercase">Break Time</label>
+              <p class="text-muted">
+
+                {{ $workhour->break_time }}
+
+            </p>
+            </div>
+            <div class="mt-3">
               <label class="tx-11 fw-bolder mb-0 text-uppercase">Over Time</label>
               <p class="text-muted">
 
@@ -82,7 +90,7 @@
 
             </p>
             </div>
-           
+
 
 
           </div>

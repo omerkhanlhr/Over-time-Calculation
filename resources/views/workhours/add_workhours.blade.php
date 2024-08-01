@@ -55,6 +55,16 @@
                                         @error('check_out_time') {{$message}} @enderror
                                     </span>
                                 </div>
+
+                                <div class="form-group mb-3">
+                                    <label for="break_time">Break Time (minutes)</label>
+                                    <input type="number" name="break_time[]" class="form-control" step="1" min="0" required>
+                                    <span class="text-danger">
+                                        @error('break_time') {{$message}} @enderror
+                                    </span>
+                                </div>
+
+                                <button type="button" class="btn btn-danger remove-row">Remove Row</button>
                                 <hr>
                             </div>
                         </div>
@@ -195,11 +205,25 @@ $(document).ready(function () {
                         @error('check_out_time') {{$message}} @enderror
                     </span>
                 </div>
+
+                <div class="form-group mb-3">
+                    <label for="break_time">Break Time (minutes)</label>
+                    <input type="number" name="break_time[]" class="form-control" step="1" min="0" required>
+                    <span class="text-danger">
+                        @error('break_time') {{$message}} @enderror
+                    </span>
+                </div>
+
+                <button type="button" class="btn btn-danger remove-row">Remove Row</button>
                 <hr>
             </div>
         `;
         $('#employeeContainer').append(newRow);
         setEmployeeSearchEvent();
+    });
+
+    $(document).on('click', '.remove-row', function () {
+        $(this).closest('.employee-group').remove();
     });
 });
 </script>
