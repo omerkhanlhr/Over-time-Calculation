@@ -62,7 +62,7 @@
               <label class="tx-11 fw-bolder mb-0 text-uppercase">Break Time</label>
               <p class="text-muted">
 
-                {{ $workhour->break_time }}
+                {{ $workhour->break_time }} mins
 
             </p>
             </div>

@@ -80,6 +80,7 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::get('/work-details', 'display')->name('display.work.hours');
     Route::get('/search-employees',  'searchEmployees')->name('search.employees');
     Route::get('/workhours/{id}/edit', 'edit')->name('edit.work.hours');
+    Route::get('calculate/workhours/overtime/{id}', 'calculate_overtime')->name('calculate.overtime');
 Route::put('/workhours/{id}', 'update')->name('update.work.hours');
 
     });

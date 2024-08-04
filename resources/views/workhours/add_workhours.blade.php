@@ -19,8 +19,8 @@
                             <div class="employee-group">
                                 <div class="form-group mb-3 mt-3">
                                     <label for="employee_search">Select Employee</label>
-                                    <input type="text" name="employee_search[]" class="form-control employee_search" placeholder="Search Employee" required>
-                                    <input type="hidden" name="employee_id[]" class="employee_id">
+                                    <input type="text" name="employee_search" class="form-control employee_search" placeholder="Search Employee" required>
+                                    <input type="hidden" name="employee_id" class="employee_id">
                                     <div class="employee_list"></div>
                                 </div>
 
@@ -167,12 +167,7 @@ $(document).ready(function () {
     $('.add-row').on('click', function () {
         var newRow = `
             <div class="employee-group">
-                <div class="form-group mb-3 mt-3">
-                    <label for="employee_search">Select Employee</label>
-                    <input type="text" name="employee_search[]" class="form-control employee_search" placeholder="Search Employee" required>
-                    <input type="hidden" name="employee_id[]" class="employee_id">
-                    <div class="employee_list"></div>
-                </div>
+
 
                 <div class="form-group mb-3 mt-3">
                     <label for="date">Date</label>
