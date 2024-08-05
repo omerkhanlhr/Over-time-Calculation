@@ -26,8 +26,8 @@
 
                                 <div class="form-group mb-3 mt-3">
                                     <label for="date">Date</label>
-                                    <input type="date" name="date[]" class="form-control" required>
-                                    <span class="text-danger">
+                                    <input type="date" name="date[]" class="form-control date-input" required>
+                                    <span class="text-danger date-error">
                                         @error('date') {{ $message }} @enderror
                                     </span>
                                 </div>
@@ -68,6 +68,8 @@
                                 <hr>
                             </div>
                         </div>
+
+                        <div id="error_message" class="text-danger mb-3"></div>
 
                         <button type="button" class="btn btn-success add-row">Add Employee</button>
                         <button type="submit" class="btn btn-primary">Add Work Hours</button>
@@ -162,17 +164,43 @@ $(document).ready(function () {
         });
     }
 
+    function checkDuplicateDates() {
+        var dates = [];
+        var duplicate = false;
+
+        $('.date-input').each(function () {
+            var date = $(this).val();
+            if (date) {
+                if (dates.includes(date)) {
+                    duplicate = true;
+                    return false;
+                }
+                dates.push(date);
+            }
+        });
+
+        return duplicate;
+    }
+
+    $(document).on('change', '.date-input', function () {
+        if (checkDuplicateDates()) {
+            $('#error_message').text('You cannot select the same date more than once.');
+            $(this).val('');
+        } else {
+            $('#error_message').text('');
+        }
+    });
+
     setEmployeeSearchEvent();
 
     $('.add-row').on('click', function () {
         var newRow = `
-            <div class="employee-group">
-
+           
 
                 <div class="form-group mb-3 mt-3">
                     <label for="date">Date</label>
-                    <input type="date" name="date[]" class="form-control" required>
-                    <span class="text-danger">
+                    <input type="date" name="date[]" class="form-control date-input" required>
+                    <span class="text-danger date-error">
                         @error('date') {{ $message }} @enderror
                     </span>
                 </div>
@@ -213,6 +241,7 @@ $(document).ready(function () {
                 <hr>
             </div>
         `;
+
         $('#employeeContainer').append(newRow);
         setEmployeeSearchEvent();
     });
