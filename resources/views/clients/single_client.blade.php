@@ -37,6 +37,7 @@
             <table id="dataTableExample" class="table">
               <thead>
                 <tr>
+                    <th>Employee Name</th>
                     <th>Date</th>
                     <th>Start Time</th>
                     <th>End Time</th>
@@ -49,6 +50,7 @@
               <tbody>
                 @foreach ($client->workHours as $workhour)
                 <tr>
+                    <td>{{ $workhour->employee->name }}</td>
                     <td>{{ Carbon\Carbon::parse($workhour->work_date)->translatedFormat('j F Y') }}</td>
                     <td>{{ $workhour->start_time }}</td>
                     <td>{{ $workhour->end_time }}</td>
