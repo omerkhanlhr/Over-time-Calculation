@@ -22,15 +22,43 @@
               <label class="tx-11 fw-bolder mb-0 text-uppercase">Phone</label>
               <p class="text-muted">    {{ $employee->phone}}        </p>
             </div>
-            
+
 
           </div>
         </div>
       </div>
           </div>
+<h5 class="card-title mt-3 mb-3">Work Details</h5>
+      <div class="table-responsive">
+        <table id="dataTableExample" class="table">
+          <thead>
+            <tr>
+                <th>Date</th>
+                <th>Start Time</th>
+                <th>End Time</th>
+                <th>Daily Work Hours</th>
+                <th>Daily Overtime</th>
+                <th>Overtime</th>
+                <th>Total Amount</th>
+            </tr>
+          </thead>
+          <tbody>
+              @foreach ($employee->workHours as $workhour )
+            <tr>
+                <td>{{ Carbon\Carbon::parse($workhour->work_date)->translatedFormat('j F Y') }}</td>
+                <td>{{ $workhour->start_time }}</td>
+                <td>{{ $workhour->end_time }}</td>
+                <td>{{ $workhour->daily_workhours }}</td>
+                <td>{{ $workhour->daily_overtime }}</td>
+                <td>{{ $workhour->is_overtime ? 'Yes' : 'No' }}</td>
+                <td>{{ $workhour->total_amount }}</td>
+            </tr>
+            @endforeach
+          </tbody>
+        </table>
+      </div>
 
-      <!-- middle wrapper end -->
-      <!-- right wrapper start -->
+
       </div>
       <!-- right wrapper end -->
 

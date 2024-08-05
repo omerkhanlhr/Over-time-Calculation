@@ -8,16 +8,7 @@ use Illuminate\Http\Request;
 
 class ClientController extends Controller
 {
-    public function getClientAddress($clientId)
-{
-    $client = Client::find($clientId);
 
-    if ($client) {
-        return response()->json(['address' => $client->address]);
-    } else {
-        return response()->json(['error' => 'Client not found'], 404);
-    }
-}
     public function Addclient()
     {
         return view('clients.add_client');
@@ -88,10 +79,11 @@ class ClientController extends Controller
     }
 
     public function Singleclient($id)
-    {
-        $client=Client::findOrFail($id);
-        return view('clients.single_client',compact('client'));
-    }
+{
+    $client = Client::with('workHours')->findOrFail($id);
+    return view('clients.single_client', compact('client'));
+}
+
 
     public function Deleteclient($id)
     {

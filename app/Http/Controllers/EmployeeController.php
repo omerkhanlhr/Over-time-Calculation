@@ -19,12 +19,12 @@ class EmployeeController extends Controller
         $employees = Employee::all();
         return view('employees.all_employees',compact('employees'));
     }
-
     public function single_employee($id)
     {
-        $employee = Employee::findOrFail($id);
-        return view('employees.single_employee',compact('employee'));
+        $employee = Employee::with('workHours')->findOrFail($id);
+        return view('employees.single_employee', compact('employee'));
     }
+
 
     public function store_employee(Request $request)
     {

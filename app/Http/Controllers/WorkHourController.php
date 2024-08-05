@@ -54,7 +54,6 @@ class WorkHourController extends Controller
         // Subtract break time
         $breakTimeMinutes = $request->break_time[$index] ?? 0; // Default to 0 if break time is null
         $totalMinutesWorked = ($hoursWorked * 60) + $minutesWorked;
-        $totalMinutesWorked -= $breakTimeMinutes;
 
         // Recalculate hours and minutes after subtracting break time
         $hoursWorked = intdiv($totalMinutesWorked, 60);
@@ -90,8 +89,9 @@ class WorkHourController extends Controller
         $workhour->end_time = $request->check_out_time[$index];
         $workhour->daily_workhours = sprintf('%02d:%02d', $hoursWorked, $minutesWorked);
         $workhour->overtime = ($dailyOvertimeHours > 0 || $dailyOvertimeMinutes > 0) ? 1 : 0;
+        $workhour->is_overtime = ($dailyOvertimeHours > 0 || $dailyOvertimeMinutes > 0) ? 1 : 0;
         $workhour->weekly_workhours = sprintf('%02d:%02d', $hoursWorked, $minutesWorked); // Store as VARCHAR
-        $workhour->break_time = $breakTimeMinutes; // Store break time in minutes
+        $workhour->break_time = $breakTimeMinutes;
         $workhour->rate = $request->rate[$index];
         $workhour->total_amount = $totalAmount;
         $workhour->save();
@@ -311,7 +311,7 @@ class WorkHourController extends Controller
         $workhour->save();
 
         $notification = array(
-            'message' => 'Overtime and Weekly Hours Calculated Successfully',
+            'message' => 'Overtime Calculated Successfully',
             'alert-type' => 'success',
         );
 
