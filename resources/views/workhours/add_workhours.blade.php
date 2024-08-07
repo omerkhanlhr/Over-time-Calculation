@@ -63,16 +63,23 @@
                                         @error('break_time') {{$message}} @enderror
                                     </span>
                                 </div>
+                                <div class="form-group mb-3">
+                                    <label for="rate">GST Tax</label>
+                                    <input type="number" name="tax[]" class="form-control tax-input" step="0.01" min="0" required>
+                                    <span class="text-danger">
+                                        @error('tax') {{$message}} @enderror
+                                    </span>
+                                </div>
 
-                                <button type="button" class="btn btn-danger remove-row">Remove Row</button>
                                 <hr>
                             </div>
                         </div>
 
                         <div id="error_message" class="text-danger mb-3"></div>
 
-                        <button type="button" class="btn btn-success add-row">Add Employee</button>
-                        <button type="submit" class="btn btn-primary">Add Work Hours</button>
+                        <button type="button" class="btn btn-success add-row">+</button>
+                        &nbsp;&nbsp;&nbsp;&nbsp;
+                        <button type="submit" class="btn btn-primary">Submit</button>
                     </form>
                 </div>
             </div>
@@ -235,7 +242,13 @@ $(document).ready(function () {
                         @error('break_time') {{$message}} @enderror
                     </span>
                 </div>
-
+                  <div class="form-group mb-3">
+                                    <label for="rate">GST Tax</label>
+                                    <input type="number" name="tax[]" class="form-control tax-input" step="0.01" min="0" required>
+                                    <span class="text-danger">
+                                        @error('tax') {{$message}} @enderror
+                                    </span>
+                                </div>
                 <button type="button" class="btn btn-danger remove-row">Remove Row</button>
                 <hr>
             </div>
@@ -249,16 +262,16 @@ $(document).ready(function () {
         // Copy data from the latest row to the new row
         var latestRow = $employeeContainer.children('.employee-group').last().prev();
         if (latestRow.length > 0) {
-            var latestDate = latestRow.find('.date-input').val();
             var latestRate = latestRow.find('.rate-input').val();
             var latestCheckInTime = latestRow.find('.check-in-time-input').val();
             var latestCheckOutTime = latestRow.find('.check-out-time-input').val();
+            var latestTax = latestRow.find('.tax-input').val();
             var latestBreakTime = latestRow.find('.break-time-input').val();
 
-            $employeeContainer.find('.employee-group').last().find('.date-input').val(latestDate);
             $employeeContainer.find('.employee-group').last().find('.rate-input').val(latestRate);
             $employeeContainer.find('.employee-group').last().find('.check-in-time-input').val(latestCheckInTime);
             $employeeContainer.find('.employee-group').last().find('.check-out-time-input').val(latestCheckOutTime);
+            $employeeContainer.find('.employee-group').last().find('.tax-input').val(latestTax);
             $employeeContainer.find('.employee-group').last().find('.break-time-input').val(latestBreakTime);
         }
     });

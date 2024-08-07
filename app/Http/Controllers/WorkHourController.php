@@ -33,6 +33,7 @@ class WorkHourController extends Controller
         'rate.*' => 'required|numeric|min:0',
         'check_in_time.*' => 'required|date_format:H:i',
         'check_out_time.*' => 'required|date_format:H:i',
+        'tax.*' => 'required|numeric|min:0',
         'break_time.*' => 'nullable|integer|min:0', // Validate break time in minutes
     ]);
 
@@ -81,12 +82,22 @@ class WorkHourController extends Controller
 
         // Calculate weekly overtime if weekly work hours exceed 40
         $weeklyOvertimeSeconds = 0;
+
+        // $tax = $request->tax[$index] / 100;
+
         if ($totalWeeklyWorkhours > 40) {
             $weeklyOvertimeSeconds = ($totalWeeklyWorkhours - 40) * 3600;
         }
 
-        // Calculate the total amount
-        $totalAmount = ($hoursWorked + $minutesWorked / 60) * $request->rate[$index];
+        if ($hoursWorked > 8)
+        {
+            $totalAmount = 8 * $request->rate[$index] + 1.5 * $request->rate[$index] * $dailyOvertimeHours - $request->tax[$index] / 100 ;
+        }
+        else
+        {
+            $totalAmount = $hoursWorked * $request->rate[$index] - $request->tax[$index] / 100;
+        }
+
 
         // Store the work hours in the database
         $workhour = new Workhour();
@@ -103,6 +114,7 @@ class WorkHourController extends Controller
         $workhour->weekly_overtime = gmdate('H:i:s', $weeklyOvertimeSeconds); // Store weekly overtime as TIME with seconds
         $workhour->break_time = $breakTimeMinutes; // Store break time in minutes
         $workhour->rate = $request->rate[$index];
+        $workhour->tax = $request->tax[$index];
         $workhour->total_amount = $totalAmount;
         $workhour->save();
 
