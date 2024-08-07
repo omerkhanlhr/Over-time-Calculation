@@ -17,6 +17,11 @@ use Maatwebsite\Excel\Facades\Excel;
 class AdminController extends Controller
 {
 
+    public function export_user()
+    {
+        return Excel::download(new UsersExport, 'users.xlsx');
+    }
+
     public function index()
     {
 

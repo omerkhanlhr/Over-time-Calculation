@@ -37,6 +37,7 @@
             <table id="dataTableExample" class="table">
               <thead>
                 <tr>
+                    <th>#</th>
                     <th>Employee Name</th>
                     <th>Date</th>
                     <th>Start Time</th>
@@ -50,6 +51,10 @@
               <tbody>
                 @foreach ($client->workHours as $workhour)
                 <tr>
+                    <td>
+                        <a href="{{route('single.work.hours.details',$workhour->id)}}">{{$workhour->id}}</a>
+                    </td>
+
                     <td>{{ $workhour->employee->name }}</td>
                     <td>{{ Carbon\Carbon::parse($workhour->work_date)->translatedFormat('j F Y') }}</td>
                     <td>{{ $workhour->start_time }}</td>

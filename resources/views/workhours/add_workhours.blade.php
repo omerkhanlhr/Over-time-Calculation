@@ -34,7 +34,7 @@
 
                                 <div class="form-group mb-3">
                                     <label for="rate">Per Hour Wage Rate</label>
-                                    <input type="number" name="rate[]" class="form-control" step="0.01" min="0" required>
+                                    <input type="number" name="rate[]" class="form-control rate-input" step="0.01" min="0" required>
                                     <span class="text-danger">
                                         @error('rate') {{$message}} @enderror
                                     </span>
@@ -42,7 +42,7 @@
 
                                 <div class="form-group mb-3">
                                     <label for="check_in_time">Check In Time</label>
-                                    <input type="time" name="check_in_time[]" class="form-control" required>
+                                    <input type="time" name="check_in_time[]" class="form-control check-in-time-input" required>
                                     <span class="text-danger">
                                         @error('check_in_time') {{$message}} @enderror
                                     </span>
@@ -50,7 +50,7 @@
 
                                 <div class="form-group mb-3">
                                     <label for="check_out_time">Check Out Time</label>
-                                    <input type="time" name="check_out_time[]" class="form-control" required>
+                                    <input type="time" name="check_out_time[]" class="form-control check-out-time-input" required>
                                     <span class="text-danger">
                                         @error('check_out_time') {{$message}} @enderror
                                     </span>
@@ -58,7 +58,7 @@
 
                                 <div class="form-group mb-3">
                                     <label for="break_time">Break Time (minutes)</label>
-                                    <input type="number" name="break_time[]" class="form-control" step="1" min="0" required>
+                                    <input type="number" name="break_time[]" class="form-control break-time-input" step="1" min="0" required>
                                     <span class="text-danger">
                                         @error('break_time') {{$message}} @enderror
                                     </span>
@@ -79,7 +79,6 @@
         </div>
     </div>
 </div>
-
 <script>
 $(document).ready(function () {
     var client_id = null;
@@ -195,7 +194,7 @@ $(document).ready(function () {
 
     $('.add-row').on('click', function () {
         var newRow = `
-           
+            <div class="employee-group">
 
                 <div class="form-group mb-3 mt-3">
                     <label for="date">Date</label>
@@ -207,7 +206,7 @@ $(document).ready(function () {
 
                 <div class="form-group mb-3">
                     <label for="rate">Per Hour Wage Rate</label>
-                    <input type="number" name="rate[]" class="form-control" step="0.01" min="0" required>
+                    <input type="number" name="rate[]" class="form-control rate-input" step="0.01" min="0" required>
                     <span class="text-danger">
                         @error('rate') {{$message}} @enderror
                     </span>
@@ -215,7 +214,7 @@ $(document).ready(function () {
 
                 <div class="form-group mb-3">
                     <label for="check_in_time">Check In Time</label>
-                    <input type="time" name="check_in_time[]" class="form-control" required>
+                    <input type="time" name="check_in_time[]" class="form-control check-in-time-input" required>
                     <span class="text-danger">
                         @error('check_in_time') {{$message}} @enderror
                     </span>
@@ -223,7 +222,7 @@ $(document).ready(function () {
 
                 <div class="form-group mb-3">
                     <label for="check_out_time">Check Out Time</label>
-                    <input type="time" name="check_out_time[]" class="form-control" required>
+                    <input type="time" name="check_out_time[]" class="form-control check-out-time-input" required>
                     <span class="text-danger">
                         @error('check_out_time') {{$message}} @enderror
                     </span>
@@ -231,7 +230,7 @@ $(document).ready(function () {
 
                 <div class="form-group mb-3">
                     <label for="break_time">Break Time (minutes)</label>
-                    <input type="number" name="break_time[]" class="form-control" step="1" min="0" required>
+                    <input type="number" name="break_time[]" class="form-control break-time-input" step="1" min="0" required>
                     <span class="text-danger">
                         @error('break_time') {{$message}} @enderror
                     </span>
@@ -242,12 +241,35 @@ $(document).ready(function () {
             </div>
         `;
 
-        $('#employeeContainer').append(newRow);
+        var $employeeContainer = $('#employeeContainer');
+        $employeeContainer.append(newRow);
+
         setEmployeeSearchEvent();
+
+        // Copy data from the latest row to the new row
+        var latestRow = $employeeContainer.children('.employee-group').last().prev();
+        if (latestRow.length > 0) {
+            var latestDate = latestRow.find('.date-input').val();
+            var latestRate = latestRow.find('.rate-input').val();
+            var latestCheckInTime = latestRow.find('.check-in-time-input').val();
+            var latestCheckOutTime = latestRow.find('.check-out-time-input').val();
+            var latestBreakTime = latestRow.find('.break-time-input').val();
+
+            $employeeContainer.find('.employee-group').last().find('.date-input').val(latestDate);
+            $employeeContainer.find('.employee-group').last().find('.rate-input').val(latestRate);
+            $employeeContainer.find('.employee-group').last().find('.check-in-time-input').val(latestCheckInTime);
+            $employeeContainer.find('.employee-group').last().find('.check-out-time-input').val(latestCheckOutTime);
+            $employeeContainer.find('.employee-group').last().find('.break-time-input').val(latestBreakTime);
+        }
     });
 
     $(document).on('click', '.remove-row', function () {
         $(this).closest('.employee-group').remove();
+        if (checkDuplicateDates()) {
+            $('#error_message').text('You cannot select the same date more than once.');
+        } else {
+            $('#error_message').text('');
+        }
     });
 });
 </script>

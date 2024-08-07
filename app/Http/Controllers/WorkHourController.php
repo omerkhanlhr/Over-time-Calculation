@@ -36,6 +36,8 @@ class WorkHourController extends Controller
         'break_time.*' => 'nullable|integer|min:0', // Validate break time in minutes
     ]);
 
+    $overworkedEntries = [];
+
     foreach ($request->date as $index => $date) {
         $employeeId = $request->employee_id;
 
@@ -54,6 +56,7 @@ class WorkHourController extends Controller
         // Subtract break time
         $breakTimeMinutes = $request->break_time[$index] ?? 0; // Default to 0 if break time is null
         $totalMinutesWorked = ($hoursWorked * 60) + $minutesWorked;
+        $totalMinutesWorked -= $breakTimeMinutes;
 
         // Recalculate hours and minutes after subtracting break time
         $hoursWorked = intdiv($totalMinutesWorked, 60);
@@ -71,11 +74,16 @@ class WorkHourController extends Controller
         // Fetch the existing weekly work hours
         $existingWeeklyWorkhours = Workhour::where('employee_id', $employeeId)
             ->whereBetween('work_date', [now()->startOfWeek(), now()->endOfWeek()])
-            ->sum(DB::raw("TIME_TO_SEC(daily_workhours)"));
+            ->sum(DB::raw("TIME_TO_SEC(daily_workhours)")) / 3600;
 
         // Add the current day's work hours to the existing weekly work hours
-        $totalWeeklyWorkhoursInSeconds = $existingWeeklyWorkhours + ($hoursWorked * 3600 + $minutesWorked * 60);
-        $weeklyWorkhours = gmdate('H:i', $totalWeeklyWorkhoursInSeconds);
+        $totalWeeklyWorkhours = $existingWeeklyWorkhours + ($hoursWorked + $minutesWorked / 60);
+
+        // Calculate weekly overtime if weekly work hours exceed 40
+        $weeklyOvertimeSeconds = 0;
+        if ($totalWeeklyWorkhours > 40) {
+            $weeklyOvertimeSeconds = ($totalWeeklyWorkhours - 40) * 3600;
+        }
 
         // Calculate the total amount
         $totalAmount = ($hoursWorked + $minutesWorked / 60) * $request->rate[$index];
@@ -88,24 +96,36 @@ class WorkHourController extends Controller
         $workhour->start_time = $request->check_in_time[$index];
         $workhour->end_time = $request->check_out_time[$index];
         $workhour->daily_workhours = sprintf('%02d:%02d', $hoursWorked, $minutesWorked);
-        $workhour->overtime = ($dailyOvertimeHours > 0 || $dailyOvertimeMinutes > 0) ? 1 : 0;
+        $workhour->daily_overtime = sprintf('%02d:%02d', $dailyOvertimeHours, $dailyOvertimeMinutes);
         $workhour->is_overtime = ($dailyOvertimeHours > 0 || $dailyOvertimeMinutes > 0) ? 1 : 0;
-        $workhour->weekly_workhours = sprintf('%02d:%02d', $hoursWorked, $minutesWorked); // Store as VARCHAR
-        $workhour->break_time = $breakTimeMinutes;
+        $workhour->overtime = ($dailyOvertimeHours > 0 || $dailyOvertimeMinutes > 0) ? 1 : 0;
+        $workhour->weekly_workhours = $totalWeeklyWorkhours; // Store as DECIMAL
+        $workhour->weekly_overtime = gmdate('H:i:s', $weeklyOvertimeSeconds); // Store weekly overtime as TIME with seconds
+        $workhour->break_time = $breakTimeMinutes; // Store break time in minutes
         $workhour->rate = $request->rate[$index];
         $workhour->total_amount = $totalAmount;
         $workhour->save();
+
+        if ($hoursWorked >= 12 || ($hoursWorked == 12 && $minutesWorked > 0)) {
+            $overworkedEntries[] = [
+                'employee_id' => $employeeId,
+                'date' => $request->date[$index],
+            ];
+        }
+    }
+
+    $notificationMessage = 'Work Hours Added Successfully';
+    if (!empty($overworkedEntries)) {
+        $notificationMessage .= '. Note: Some entries exceed 12 hours.';
     }
 
     $notification = array(
-        'message' => 'Work Hours Added Successfully',
+        'message' => $notificationMessage,
         'alert-type' => 'success',
     );
 
     return redirect()->route('display.work.hours')->with($notification);
 }
-
-
 
     public function searchClients(Request $request)
     {
@@ -180,15 +200,22 @@ class WorkHourController extends Controller
             $dailyOvertimeMinutes = $dailyOvertimeMinutes % 60;
         }
 
+        $employeeId=$workhour->employee_id;
+
         // Fetch the existing weekly work hours excluding the current record
-        $existingWeeklyWorkhours = Workhour::where('employee_id', $request->employee_id)
-            ->where('id', '!=', $id)
+        $existingWeeklyWorkhours = Workhour::where('employee_id', $employeeId)
             ->whereBetween('work_date', [now()->startOfWeek(), now()->endOfWeek()])
-            ->sum(DB::raw("TIME_TO_SEC(daily_workhours)"));
+            ->sum(DB::raw("TIME_TO_SEC(daily_workhours)")) / 3600;
 
         // Add the current day's work hours to the existing weekly work hours
-        $totalWeeklyWorkhoursInSeconds = $existingWeeklyWorkhours + ($hoursWorked * 3600 + $minutesWorked * 60);
-        $weeklyWorkhours = gmdate('H:i', $totalWeeklyWorkhoursInSeconds);
+        $totalWeeklyWorkhours = $existingWeeklyWorkhours + ($hoursWorked + $minutesWorked / 60);
+
+        // Calculate weekly overtime if weekly work hours exceed 40
+        $weeklyOvertimeSeconds = 0;
+        if ($totalWeeklyWorkhours > 40) {
+            $weeklyOvertimeSeconds = ($totalWeeklyWorkhours - 40) * 3600;
+        }
+
 
         // Calculate the total amount
         $totalAmount = ($hoursWorked + $minutesWorked / 60) * $request->rate;
@@ -199,8 +226,8 @@ class WorkHourController extends Controller
         $workhour->start_time = $request->check_in_time;
         $workhour->end_time = $request->check_out_time;
         $workhour->daily_workhours = sprintf('%02d:%02d', $hoursWorked, $minutesWorked);
-        $workhour->weekly_workhours = $weeklyWorkhours;
-        $workhour->break_time = $breakTimeMinutes; // Store break time in minutes
+        $workhour->weekly_workhours = $totalWeeklyWorkhours;
+        $workhour->break_time = $breakTimeMinutes;
         $workhour->daily_overtime = sprintf('%02d:%02d', $dailyOvertimeHours, $dailyOvertimeMinutes);
         $workhour->overtime = ($dailyOvertimeHours > 0 || $dailyOvertimeMinutes > 0) ? 1 : 0;
         $workhour->rate = $request->rate;
@@ -216,24 +243,26 @@ class WorkHourController extends Controller
     }
 
     public function calculate_overtime($id)
-    {
-        $workhour = Workhour::findOrFail($id);
-        $employeeId = $workhour->employee_id;
+{
+    $workhour = Workhour::findOrFail($id);
+    $employeeId = $workhour->employee_id;
 
-        // Calculate daily work time and overtime
-        $start_time = new \DateTime($workhour->start_time);
-        $end_time = new \DateTime($workhour->end_time);
-        $break_time_minutes = $workhour->break_time;
+    // Calculate daily work time and overtime
+    $start_time = new \DateTime($workhour->start_time);
+    $end_time = new \DateTime($workhour->end_time);
+    $break_time_minutes = $workhour->break_time;
 
-        // If the end time is before the start time, it means the work period spans midnight
-        if ($end_time <= $start_time) {
-            $end_time->modify('+1 day');
-        }
+    // If the end time is before the start time, it means the work period spans midnight
+    if ($end_time <= $start_time) {
+        $end_time->modify('+1 day');
+    }
 
-        // Calculate total worked interval
-        $interval = $start_time->diff($end_time);
-        $hoursWorked = $interval->h + ($interval->d * 24); // Convert days to hours if any
-        $minutesWorked = $interval->i;
+    // Calculate total worked interval
+    $interval = $start_time->diff($end_time);
+    $hoursWorked = $interval->h + ($interval->d * 24); // Convert days to hours if any
+    $minutesWorked = $interval->i;
+
+    // Convert total work time to minutes
 
         // Convert total work time to minutes
         $totalWorkedMinutes = ($hoursWorked * 60) + $minutesWorked;
@@ -254,67 +283,67 @@ class WorkHourController extends Controller
         $dailyOvertimeHours = intdiv($dailyOvertimeMinutes, 60);
         $dailyOvertimeMinutes = $dailyOvertimeMinutes % 60;
 
-        // Update daily work hour record
-        $workhour->daily_workhours = sprintf('%02d:%02d', $effectiveWorkedHours, $effectiveWorkedMinutes);
-        $workhour->daily_overtime = sprintf('%02d:%02d', $dailyOvertimeHours, $dailyOvertimeMinutes);
-        $workhour->overtime = 0;
-        $workhour->save();
+    // Update daily work hour record
+   // Update daily work hour record
+   $workhour->daily_workhours = sprintf('%02d:%02d', $effectiveWorkedHours, $effectiveWorkedMinutes);
+   $workhour->daily_overtime = sprintf('%02d:%02d', $dailyOvertimeHours, $dailyOvertimeMinutes); // Convert to hours
+    $workhour->overtime = 0;
+    $workhour->save();
 
-        // Calculate weekly work hours and overtime
-        $startOfWeek = now()->startOfWeek();
-        $endOfWeek = now()->endOfWeek();
+    // Calculate weekly work hours and overtime
+    $startOfWeek = now()->startOfWeek();
+    $endOfWeek = now()->endOfWeek();
 
-        $weeklyWorkhours = Workhour::where('employee_id', $employeeId)
-            ->whereBetween('work_date', [$startOfWeek, $endOfWeek])
-            ->get();
+    $weeklyWorkhours = Workhour::where('employee_id', $employeeId)
+        ->whereBetween('work_date', [$startOfWeek, $endOfWeek])
+        ->get();
 
-        $totalWeeklyWorkedMinutes = 0;
-        $totalWeeklyBreakMinutes = 0;
+    $totalWeeklyWorkedMinutes = 0;
+    $totalWeeklyBreakMinutes = 0;
 
-        foreach ($weeklyWorkhours as $entry) {
-            $start_time = new \DateTime($entry->start_time);
-            $end_time = new \DateTime($entry->end_time);
+    foreach ($weeklyWorkhours as $entry) {
+        $start_time = new \DateTime($entry->start_time);
+        $end_time = new \DateTime($entry->end_time);
 
-            if ($end_time <= $start_time) {
-                $end_time->modify('+1 day');
-            }
-
-            $interval = $start_time->diff($end_time);
-            $hoursWorked = $interval->h + ($interval->d * 24);
-            $minutesWorked = $interval->i;
-
-            $totalMinutesWorked = ($hoursWorked * 60) + $minutesWorked;
-
-            $totalWeeklyWorkedMinutes += $totalMinutesWorked;
-            $totalWeeklyBreakMinutes += $entry->break_time;
+        if ($end_time <= $start_time) {
+            $end_time->modify('+1 day');
         }
 
-        // Subtract total break time for the week
-        $effectiveWeeklyWorkedMinutes = $totalWeeklyWorkedMinutes - $totalWeeklyBreakMinutes;
+        $interval = $start_time->diff($end_time);
+        $hoursWorked = $interval->h + ($interval->d * 24);
+        $minutesWorked = $interval->i;
 
-        // Convert back to hours and minutes
-        $effectiveWeeklyWorkedHours = intdiv($effectiveWeeklyWorkedMinutes, 60);
-        $effectiveWeeklyWorkedMinutes = $effectiveWeeklyWorkedMinutes % 60;
+        $totalMinutesWorked = ($hoursWorked * 60) + $minutesWorked;
 
-        // Determine weekly overtime
-        $weeklyOvertimeMinutes = 0;
-        if ($effectiveWeeklyWorkedHours > 40) {
-            $weeklyOvertimeMinutes = ($effectiveWeeklyWorkedHours - 40) * 60 + $effectiveWeeklyWorkedMinutes;
-        }
-
-        $weeklyOvertimeHours = intdiv($weeklyOvertimeMinutes, 60);
-        $weeklyOvertimeMinutes = $weeklyOvertimeMinutes % 60;
-
-        // Update the workhour record with weekly work hours and overtime details
-        $workhour->weekly_workhours = sprintf('%02d:%02d', $effectiveWeeklyWorkedHours, $effectiveWeeklyWorkedMinutes);
-        $workhour->weekly_overtime = sprintf('%02d:%02d', $weeklyOvertimeHours, $weeklyOvertimeMinutes);
-        $workhour->save();
-
-        $notification = array(
-            'message' => 'Overtime Calculated Successfully',
-            'alert-type' => 'success',
-        );
-
-        return redirect()->back()->with($notification);
+        $totalWeeklyWorkedMinutes += $totalMinutesWorked;
+        $totalWeeklyBreakMinutes += $entry->break_time;
     }
+
+    // Subtract total break time for the week
+    $effectiveWeeklyWorkedMinutes = $totalWeeklyWorkedMinutes - $totalWeeklyBreakMinutes;
+
+    // Convert effective weekly worked minutes to hours
+    $effectiveWeeklyWorkedHours = intdiv($effectiveWeeklyWorkedMinutes, 60);
+
+    // Determine weekly overtime
+    $weeklyOvertimeMinutes = 0;
+    if ($effectiveWeeklyWorkedHours > 40) {
+        $weeklyOvertimeMinutes = ($effectiveWeeklyWorkedHours - 40) * 60;
+        $effectiveWeeklyWorkedHours = 40; // Cap weekly worked hours at 40 if there's overtime
+    }
+
+    // Update the workhour record with weekly work hours and overtime details
+    $workhour->weekly_workhours = $effectiveWeeklyWorkedHours;
+    $workhour->weekly_overtime = intdiv($weeklyOvertimeMinutes, 60); // Convert to hours
+    $workhour->save();
+
+    $notification = array(
+        'message' => 'Overtime Calculated Successfully',
+        'alert-type' => 'success',
+    );
+
+    return redirect()->back()->with($notification);
+}
+
+
 }
