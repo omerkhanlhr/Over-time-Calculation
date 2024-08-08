@@ -24,6 +24,17 @@
                             <input type="hidden" name="employee_id" id="employee_id" value="{{ $workhour->employee_id }}">
                             <div id="employee_list"></div>
                         </div>
+                        <div class="form-group mb-3 mt-3">
+                            <label for="designation_id">Select Labour Type</label>
+                            <select name="labour_id" class="form-select" id="labour_id" required>
+                                <option value="" disabled>Select Labour Type</option>
+                                @foreach($labours as $labour)
+                                    <option value="{{ $labour->id }}" {{ $workhour->labour_id == $labour->id ? 'selected' : '' }}>
+                                        {{ $labour->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
 
                         <div class="form-group mb-3 mt-3">
                             <label for="promotion_date">Date</label>

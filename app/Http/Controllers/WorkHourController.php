@@ -166,7 +166,8 @@ class WorkHourController extends Controller
         $workhour = Workhour::findOrFail($id);
         $clients = Client::all();
         $employees = Employee::all();
-        return view('workhours.edit_workhours', compact('workhour', 'clients', 'employees'));
+        $labours = Labour::all();
+        return view('workhours.edit_workhours', compact('workhour', 'clients', 'employees','labours'));
     }
 
     public function update(Request $request, $id)
@@ -174,6 +175,7 @@ class WorkHourController extends Controller
         $request->validate([
             'client_id' => 'required|exists:clients,id',
             'employee_id' => 'required|exists:employees,id',
+            'labour_id' => 'required|exists:labours,id',
             'date' => 'required|date',
             'rate' => 'required|numeric|min:0',
             'break_time' => 'required|integer|min:0', // Validate break time in minutes
@@ -243,6 +245,7 @@ class WorkHourController extends Controller
         $workhour->daily_overtime = sprintf('%02d:%02d', $dailyOvertimeHours, $dailyOvertimeMinutes);
         $workhour->overtime = ($dailyOvertimeHours > 0 || $dailyOvertimeMinutes > 0) ? 1 : 0;
         $workhour->rate = $request->rate;
+        $workhour->labour_id = $request->labour_id;
         $workhour->total_amount = $totalAmount;
         $workhour->save();
 
