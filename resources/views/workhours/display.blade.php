@@ -35,15 +35,7 @@
                 <td>{{ $workhour->client->name }}</td>
                 <td>{{ $workhour->employee->name }}</td>
                 <td>{{ $workhour->rate }}</td>
-                <td>
-                    @if ($workhour->overtime==1)
-                    <span class="badge bg bg-warning">
-                        <a href="{{route('calculate.overtime',$workhour->id)}}">Calculate Overtime</a>
-                    </span>
-                    @else
-                    -
-                    @endif
-                </td>
+                <td>{{ $workhour->overtime ? 'Yes' : 'No' }}</td>
                 <td>${{ $workhour->total_amount }}</td>
                 <td>
                     <a href="{{route('edit.work.hours',$workhour->id)}}" class="btn btn-inverse-warning"><i class="fa fa-edit" style="font-size:24px;color:yellow"></i></a>

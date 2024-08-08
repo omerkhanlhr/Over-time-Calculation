@@ -81,6 +81,26 @@
 
             </ul>
           </div>
+        <li class="nav-item nav-category">Labour Types</li>
+        <li class="nav-item">
+          <a class="nav-link" data-bs-toggle="collapse" href="#types" role="button" aria-expanded="false" aria-controls="emails">
+            <i class="link-icon" data-feather="box"></i>
+            <span class="link-title">Labour Types</span>
+            <i class="link-arrow" data-feather="chevron-down"></i>
+          </a>
+          <div class="collapse" id="types">
+            <ul class="nav sub-menu">
+              {{-- @if(Auth::user()->can('site.settings')) --}}
+              <li class="nav-item">
+                <a href="{{ route('all.type') }}" class="nav-link">All Labour Types</a>
+              </li>
+
+              <li class="nav-item">
+                <a href="{{ route('add.type') }}" class="nav-link">Add Labour Types</a>
+              </li>
+
+            </ul>
+          </div>
         <li class="nav-item nav-category">Work Hours</li>
         <li class="nav-item">
           <a class="nav-link" data-bs-toggle="collapse" href="#work_hours" role="button" aria-expanded="false" aria-controls="emails">

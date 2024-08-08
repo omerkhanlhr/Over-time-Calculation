@@ -22,4 +22,8 @@ class Workhour extends Model
     {
         return $this->belongsTo(Client::class);
     }
+    public function labour()
+    {
+        return $this->belongsTo(Labour::class);
+    }
 }

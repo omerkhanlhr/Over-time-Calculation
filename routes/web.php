@@ -4,6 +4,7 @@ use App\Http\Controllers\AdminController;
 use App\Http\Controllers\ClientController;
 use App\Http\Controllers\DesignationController;
 use App\Http\Controllers\EmployeeController;
+use App\Http\Controllers\LabourTypeController;
 use App\Http\Controllers\PDFController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SalaryController;
@@ -81,9 +82,19 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::get('/work-details', 'display')->name('display.work.hours');
     Route::get('/search-employees',  'searchEmployees')->name('search.employees');
     Route::get('/workhours/{id}/edit', 'edit')->name('edit.work.hours');
-    Route::get('calculate/workhours/overtime/{id}', 'calculate_overtime')->name('calculate.overtime');
 Route::put('/workhours/{id}', 'update')->name('update.work.hours');
 
+    });
+});
+
+Route::middleware('auth' , 'role:admin')->group(function () {
+    Route::controller(LabourTypeController::class)->group(function() {
+        Route::get('/add/type/labour', 'add_type')->name('add.type');
+        Route::get('/all/type', 'all_type')->name('all.type');
+        Route::post('/store/type', 'store_type')->name('save.type');
+        Route::get('/edit/type/{id}', 'edit_type')->name('edit.type');
+        Route::post('/update/type/{id}', 'update_type')->name('update.type');
+        Route::get('/delete/type/{id}', 'delete_type')->name('delete.type');
     });
 });
 

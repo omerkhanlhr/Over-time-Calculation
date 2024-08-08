@@ -23,6 +23,15 @@
                                     <input type="hidden" name="employee_id" class="employee_id">
                                     <div class="employee_list"></div>
                                 </div>
+                                <div class="form-group mb-3 mt-3">
+                                    <label for="labour_id">Select Labour Type</label>
+                                    <select name="labour_id" id="labour_id" class="form-select" required>
+                                        <option value="" disabled selected>Select Labour Type</option>
+                                        @foreach($labours as $labour)
+                                            <option value="{{ $labour->id }}">{{ $labour->name }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
 
                                 <div class="form-group mb-3 mt-3">
                                     <label for="date">Date</label>
@@ -63,15 +72,7 @@
                                         @error('break_time') {{$message}} @enderror
                                     </span>
                                 </div>
-                                <div class="form-group mb-3">
-                                    <label for="rate">GST Tax</label>
-                                    <input type="number" name="tax[]" class="form-control tax-input" step="0.01" min="0" required>
-                                    <span class="text-danger">
-                                        @error('tax') {{$message}} @enderror
-                                    </span>
-                                </div>
 
-                                <hr>
                             </div>
                         </div>
 
@@ -242,13 +243,7 @@ $(document).ready(function () {
                         @error('break_time') {{$message}} @enderror
                     </span>
                 </div>
-                  <div class="form-group mb-3">
-                                    <label for="rate">GST Tax</label>
-                                    <input type="number" name="tax[]" class="form-control tax-input" step="0.01" min="0" required>
-                                    <span class="text-danger">
-                                        @error('tax') {{$message}} @enderror
-                                    </span>
-                                </div>
+
                 <button type="button" class="btn btn-danger remove-row">Remove Row</button>
                 <hr>
             </div>
@@ -265,13 +260,11 @@ $(document).ready(function () {
             var latestRate = latestRow.find('.rate-input').val();
             var latestCheckInTime = latestRow.find('.check-in-time-input').val();
             var latestCheckOutTime = latestRow.find('.check-out-time-input').val();
-            var latestTax = latestRow.find('.tax-input').val();
             var latestBreakTime = latestRow.find('.break-time-input').val();
 
             $employeeContainer.find('.employee-group').last().find('.rate-input').val(latestRate);
             $employeeContainer.find('.employee-group').last().find('.check-in-time-input').val(latestCheckInTime);
             $employeeContainer.find('.employee-group').last().find('.check-out-time-input').val(latestCheckOutTime);
-            $employeeContainer.find('.employee-group').last().find('.tax-input').val(latestTax);
             $employeeContainer.find('.employee-group').last().find('.break-time-input').val(latestBreakTime);
         }
     });
