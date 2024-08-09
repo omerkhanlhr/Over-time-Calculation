@@ -118,6 +118,12 @@
               <li class="nav-item">
                 <a href="{{ route('add.work.hours') }}" class="nav-link">Add WorkHours</a>
               </li>
+              <li class="nav-item">
+                <a href="{{ route('add.stats.hours') }}" class="nav-link">Add StatsHours</a>
+              </li>
+              <li class="nav-item">
+                <a href="{{ route('display.stats.hours') }}" class="nav-link">StatsHours Details</a>
+              </li>
 
             </ul>
           </div>

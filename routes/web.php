@@ -8,6 +8,7 @@ use App\Http\Controllers\LabourTypeController;
 use App\Http\Controllers\PDFController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SalaryController;
+use App\Http\Controllers\StatsController;
 use App\Http\Controllers\WorkHourController;
 use App\Models\Designation;
 use App\Models\Salary;
@@ -41,7 +42,6 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::post('/update/user', [AdminController::class, 'updateUser'])->name('update.user');
     Route::get('/delete/user/{id}', [AdminController::class, 'deleteUser'])->name('delete.user');
     Route::get('/single/user/{id}', [AdminController::class, 'singleUser'])->name('single.user');
-
 });
 
 Route::middleware(['auth', 'role:admin'])->group(function () {
@@ -75,20 +75,33 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
 Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::controller(WorkHourController::class)->group(function () {
 
-    Route::get('add-work-hours','create_workhour')->name('add.work.hours');
-    Route::get('single-work-hours-details/{id}','single_Workdetails')->name('single.work.hours.details');
-    Route::post('store-work-hours','store_workhour')->name('store.work.hours');
-    Route::get('/search-clients', 'searchClients')->name('search.clients');
-    Route::get('/work-details', 'display')->name('display.work.hours');
-    Route::get('/search-employees',  'searchEmployees')->name('search.employees');
-    Route::get('/workhours/{id}/edit', 'edit')->name('edit.work.hours');
-Route::put('/workhours/{id}', 'update')->name('update.work.hours');
-
+        Route::get('add-work-hours', 'create_workhour')->name('add.work.hours');
+        Route::get('single-work-hours-details/{id}', 'single_Workdetails')->name('single.work.hours.details');
+        Route::post('store-work-hours', 'store_workhour')->name('store.work.hours');
+        Route::get('/search-clients', 'searchClients')->name('search.clients');
+        Route::get('/work-details', 'display')->name('display.work.hours');
+        Route::get('/search-employees',  'searchEmployees')->name('search.employees');
+        Route::get('/workhours/{id}/edit', 'edit')->name('edit.work.hours');
+        Route::put('/workhours/{id}', 'update')->name('update.work.hours');
+        Route::get('/delete/workhour/{id}', 'delete_workhour')->name('delete.work.hour');
     });
 });
 
-Route::middleware('auth' , 'role:admin')->group(function () {
-    Route::controller(LabourTypeController::class)->group(function() {
+Route::middleware(['auth', 'role:admin'])->group(function () {
+    Route::controller(StatsController::class)->group(function () {
+
+        Route::get('add-stats-hours', 'create_statshour')->name('add.stats.hours');
+        Route::get('single-stats-hours-details/{id}', 'single_statsdetails')->name('single.stats.hours.details');
+        Route::post('store-stats-hours', 'store_statshour')->name('store.stats.hours');
+        Route::get('/stats-details', 'display')->name('display.stats.hours');
+        Route::get('/statshours/{id}/edit', 'edit')->name('edit.stats.hours');
+        Route::put('/statshours/{id}', 'update')->name('update.stats.hours');
+        Route::get('/delete/statshour/{id}', 'delete_statshour')->name('delete.statshour');
+    });
+});
+
+Route::middleware('auth', 'role:admin')->group(function () {
+    Route::controller(LabourTypeController::class)->group(function () {
         Route::get('/add/type/labour', 'add_type')->name('add.type');
         Route::get('/all/type', 'all_type')->name('all.type');
         Route::post('/store/type', 'store_type')->name('save.type');

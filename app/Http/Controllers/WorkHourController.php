@@ -257,5 +257,27 @@ class WorkHourController extends Controller
         return redirect()->route('display.work.hours')->with($notification);
     }
 
+    public function delete_workhour($id)
+    {
+        $workhour = Workhour::findOrFail($id);
+        if($workhour)
+        {
+            $workhour->delete();
+            $notification = array(
+                'message' => 'Work Hours Deleted Successfully',
+                'alert-type' => 'success',
+            );
+            return redirect()->back()->with($notification);
+        }
+        else
+        {
+            $notification = array(
+                'message' => 'Something went wrong',
+                'alert-type' => 'error',
+            );
+            return redirect()->back()->with($notification);
+        }
+    }
+
 
 }

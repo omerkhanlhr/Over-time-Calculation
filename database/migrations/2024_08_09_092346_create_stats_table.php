@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('workhours', function (Blueprint $table) {
+        Schema::create('stats', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('employee_id');
             $table->unsignedBigInteger('client_id');
@@ -19,9 +19,7 @@ return new class extends Migration
             $table->time('start_time');
             $table->time('end_time');
             $table->time('daily_workhours');
-            $table->time('weekly_workhours');
             $table->integer('daily_overtime')->default(0);
-            $table->time('weekly_overtime')->default('00:00');
             $table->boolean('overtime')->default(0);
             $table->decimal('total_amount', 10, 2);
             $table->timestamps();
@@ -35,6 +33,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('workhours');
+        Schema::dropIfExists('stats');
     }
 };
