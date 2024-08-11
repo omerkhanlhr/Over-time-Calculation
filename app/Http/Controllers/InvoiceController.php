@@ -93,39 +93,41 @@ class InvoiceController extends Controller
     }
 
     public function getLaborTypes(Request $request)
-    {
-        $client_id = $request->client_id;
-        $from_date = $request->from_date;
-        $to_date = $request->to_date;
+{
+    $client_id = $request->client_id;
+    $from_date = $request->from_date;
+    $to_date = $request->to_date;
 
-        Log::info('Received request:', [
-            'client_id' => $client_id,
-            'from_date' => $from_date,
-            'to_date' => $to_date,
-        ]);
+    Log::info('Received request:', [
+        'client_id' => $client_id,
+        'from_date' => $from_date,
+        'to_date' => $to_date,
+    ]);
 
-        // Fetch work hours for the selected client and date range
-        $workhours = Workhour::where('client_id', $client_id)
-            ->whereBetween('work_date', [$from_date, $to_date])
-            ->with('laborType') // Assuming you have a relationship named laborType in your Workhour model
-            ->get();
+    // Fetch work hours for the selected client and date range
+    $workhours = Workhour::where('client_id', $client_id)
+        ->whereBetween('work_date', [$from_date, $to_date])
+        ->with('labour') // Using the correct relationship
+        ->get();
 
+    Log::info('Fetched workhours:', $workhours->toArray());
 
-        // Get unique labor types
-        $labor_types = $workhours->groupBy('labor_type_id')->map(function ($workhourGroup) {
-            return [
-                'id' => $workhourGroup->first()->laborType->id,
-                'name' => $workhourGroup->first()->laborType->name,
-            ];
-        })->values();
+    // Get unique labor types
+    $labor_types = $workhours->groupBy('labour_id')->map(function ($workhourGroup) {
+        $labour = $workhourGroup->first()->labour;
+        return [
+            'id' => $labour ? $labour->id : null,
+            'name' => $labour ? $labour->name : 'Unknown Labor Type',
+        ];
+    })->values();
 
+    Log::info('Labor Types:', $labor_types->toArray());
 
-        // Return labor types as JSON
-        return response()->json([
-            'labor_types' => $labor_types,
-        ]);
-    }
-
+    // Return labor types as JSON
+    return response()->json([
+        'labor_types' => $labor_types,
+    ]);
+}
 
 
     public function generatePdf($id)
