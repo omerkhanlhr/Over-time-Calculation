@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('invoice_breakdowns', function (Blueprint $table) {
             $table->id();
             $table->foreignId('invoice_id')->constrained('invoices')->onDelete('cascade');
-            $table->foreignId('labor_type_id')->constrained('labor_types'); // Assuming you have a `labor_types` table
+            $table->foreignId('labor_type_id')->constrained('labours'); // Assuming you have a `labor_types` table
             $table->integer('total_employees');
             $table->decimal('rate', 10, 2);
             $table->integer('total_hours'); // This will store the total hours as an integer
