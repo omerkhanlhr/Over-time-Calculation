@@ -22,6 +22,7 @@
                                     <th>Client Name</th>
                                     <th>Employee Name</th>
                                     <th>Rate</th>
+                                    <th>Work Date</th>
                                     <th>Overtime</th>
                                     <th>Total Amount</th>
                                     <th>Actions</th>
@@ -35,6 +36,7 @@
                 <td>{{ $workhour->client->name }}</td>
                 <td>{{ $workhour->employee->name }}</td>
                 <td>{{ $workhour->rate }}</td>
+                <td>{{ $workhour->work_date }}</td>
                 <td>{{ $workhour->overtime ? 'Yes' : 'No' }}</td>
                 <td>${{ $workhour->total_amount }}</td>
                 <td>

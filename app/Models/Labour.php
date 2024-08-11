@@ -12,4 +12,9 @@ class Labour extends Model
     protected $guarded = [];
 
     protected $table = 'labours';
+
+    public function workhours()
+    {
+        return $this->hasMany(Workhour::class);
+    }
 }

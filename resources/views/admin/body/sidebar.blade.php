@@ -101,6 +101,26 @@
 
             </ul>
           </div>
+        <li class="nav-item nav-category">Inovices</li>
+        <li class="nav-item">
+          <a class="nav-link" data-bs-toggle="collapse" href="#invoices" role="button" aria-expanded="false" aria-controls="emails">
+            <i class="link-icon" data-feather="box"></i>
+            <span class="link-title">Invoices</span>
+            <i class="link-arrow" data-feather="chevron-down"></i>
+          </a>
+          <div class="collapse" id="invoices">
+            <ul class="nav sub-menu">
+              {{-- @if(Auth::user()->can('site.settings')) --}}
+              <li class="nav-item">
+                <a href="{{ route('invoices.create') }}" class="nav-link">Add Invoice</a>
+              </li>
+
+              <li class="nav-item">
+                <a href="{{ route('invoices.show') }}" class="nav-link">All Invoices</a>
+              </li>
+
+            </ul>
+          </div>
         <li class="nav-item nav-category">Work Hours</li>
         <li class="nav-item">
           <a class="nav-link" data-bs-toggle="collapse" href="#work_hours" role="button" aria-expanded="false" aria-controls="emails">

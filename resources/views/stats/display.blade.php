@@ -23,6 +23,7 @@
                                     <th>Employee Name</th>
                                     <th>Rate</th>
                                     <th>Overtime</th>
+                                    <th>Move</th>
                                     <th>Total Amount</th>
                                     <th>Actions</th>
 
@@ -36,6 +37,9 @@
                 <td>{{ $stat->employee->name }}</td>
                 <td>{{ $stat->rate }}</td>
                 <td>{{ $stat->overtime ? 'Yes' : 'No' }}</td>
+                <td>
+                        <a href="{{ route('move.To.Workhours',$stat->id)}}" class="btn btn-inverse-info">Move</a>
+                </td>
                 <td>${{ $stat->total_amount }}</td>
                 <td>
                     <a href="{{route('edit.stats.hours',$stat->id)}}" class="btn btn-inverse-warning"><i class="fa fa-edit" style="font-size:24px;color:yellow"></i></a>

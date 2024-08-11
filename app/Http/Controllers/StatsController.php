@@ -6,6 +6,7 @@ use App\Models\Client;
 use App\Models\Employee;
 use App\Models\Labour;
 use App\Models\Stats;
+use App\Models\Workhour;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -15,7 +16,7 @@ class StatsController extends Controller
     {
         $labours = Labour::all();
 
-        return view('stats.add_statshours',compact('labours'));
+        return view('stats.add_statshours', compact('labours'));
     }
 
     public function store_statshour(Request $request)
@@ -73,12 +74,9 @@ class StatsController extends Controller
 
 
 
-            if ($hoursWorked > 8)
-            {
+            if ($hoursWorked > 8) {
                 $totalAmount = 8 * $request->rate[$index] + 1.5 * $request->rate[$index] * $dailyOvertimeHours;
-            }
-            else
-            {
+            } else {
                 $totalAmount = $hoursWorked * $request->rate[$index];
             }
 
@@ -141,7 +139,7 @@ class StatsController extends Controller
         $clients = Client::all();
         $employees = Employee::all();
         $labours = Labour::all();
-        return view('stats.edit_statshour', compact('stat', 'clients', 'employees','labours'));
+        return view('stats.edit_statshour', compact('stat', 'clients', 'employees', 'labours'));
     }
 
     public function update(Request $request, $id)
@@ -188,21 +186,18 @@ class StatsController extends Controller
             $dailyOvertimeMinutes = $dailyOvertimeMinutes % 60;
         }
 
-        $employeeId=$stat->employee_id;
+        $employeeId = $stat->employee_id;
 
         // Fetch the existing weekly work hours excluding the current record
         $existingWeeklyWorkhours = Stats::where('employee_id', $employeeId)
             ->whereBetween('work_date', [now()->startOfWeek(), now()->endOfWeek()])
             ->sum(DB::raw("TIME_TO_SEC(daily_workhours)")) / 3600;
 
-            if ($hoursWorked > 8)
-            {
-                $totalAmount = 8 * $request->rate + 1.5 * $request->rate * $dailyOvertimeHours;
-            }
-            else
-            {
-                $totalAmount = $hoursWorked * $request->rate;
-            }
+        if ($hoursWorked > 8) {
+            $totalAmount = 8 * $request->rate + 1.5 * $request->rate * $dailyOvertimeHours;
+        } else {
+            $totalAmount = $hoursWorked * $request->rate;
+        }
 
 
         $stat->employee_id = $request->employee_id;
@@ -226,21 +221,71 @@ class StatsController extends Controller
 
         return redirect()->route('display.stats.hours')->with($notification);
     }
+    public function moveToWorkHours($id)
+    {
+        $stat = Stats::findOrFail($id);
+
+        $workhour = new Workhour();
+
+        $workhour->employee_id = $stat->employee_id;
+        $workhour->client_id = $stat->client_id;
+        $workhour->work_date = $stat->work_date;
+        $workhour->start_time = $stat->start_time;
+        $workhour->end_time = $stat->end_time;
+        $workhour->daily_workhours = $stat->daily_workhours;
+        $workhour->daily_overtime = $stat->daily_overtime;
+        $workhour->overtime = $stat->overtime;
+        $workhour->total_amount = $stat->total_amount;
+        $workhour->rate = $stat->rate;
+        $workhour->break_time = $stat->break_time;
+        $workhour->labour_id = $stat->labour_id;
+
+        // Extract hours from daily_workhours (TIME) and add to weekly_workhours (INTEGER)
+        $dailyHours = (int) date('H', strtotime($stat->daily_workhours));
+
+        // Add daily hours to weekly_workhours
+        $workhour->weekly_workhours += $dailyHours;
+
+        // Check if weekly_workhours exceeds 40
+        if ($workhour->weekly_workhours > 40) {
+            $overtimeHours = $workhour->weekly_workhours - 40;
+
+            // Update weekly_overtime (TIME) column
+            $existingOvertime = strtotime($workhour->weekly_overtime);
+            $additionalOvertime = strtotime("$overtimeHours:00:00");
+
+            // Add the overtime to existing weekly_overtime
+            $newOvertime = date("H:i:s", $existingOvertime + $additionalOvertime);
+            $workhour->weekly_overtime = $newOvertime;
+
+            // Set weekly_workhours to 40 (as the rest is overtime)
+            $workhour->weekly_workhours = 40;
+        }
+
+        $workhour->save();
+
+        $stat->delete();
+
+        $notification = array(
+            'message' => 'Data Moved Successfully',
+            'alert-type' => 'success',
+        );
+
+        return redirect()->back()->with($notification);
+    }
+
 
     public function delete_statshour($id)
     {
         $stat = Stats::findOrFail($id);
-        if($stat)
-        {
+        if ($stat) {
             $stat->delete();
             $notification = array(
                 'message' => 'Stats Hours Deleted Successfully',
                 'alert-type' => 'success',
             );
             return redirect()->back()->with($notification);
-        }
-        else
-        {
+        } else {
             $notification = array(
                 'message' => 'Something went wrong',
                 'alert-type' => 'error',
@@ -248,5 +293,4 @@ class StatsController extends Controller
             return redirect()->back()->with($notification);
         }
     }
-
 }

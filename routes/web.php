@@ -4,6 +4,7 @@ use App\Http\Controllers\AdminController;
 use App\Http\Controllers\ClientController;
 use App\Http\Controllers\DesignationController;
 use App\Http\Controllers\EmployeeController;
+use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\LabourTypeController;
 use App\Http\Controllers\PDFController;
 use App\Http\Controllers\ProfileController;
@@ -97,6 +98,7 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
         Route::get('/statshours/{id}/edit', 'edit')->name('edit.stats.hours');
         Route::put('/statshours/{id}', 'update')->name('update.stats.hours');
         Route::get('/delete/statshour/{id}', 'delete_statshour')->name('delete.statshour');
+        Route::get('/move/statshour/{id}', 'moveToWorkHours')->name('move.To.Workhours');
     });
 });
 
@@ -111,6 +113,18 @@ Route::middleware('auth', 'role:admin')->group(function () {
     });
 });
 
+Route::middleware(['auth', 'role:admin'])->group(function () {
+    Route::controller(InvoiceController::class)->group(function () {
+        Route::get('invoices/create' ,'create_invoice')->name('invoices.create');
+        Route::post('invoices/store' , 'createInvoice')->name('invoices.store');
+        Route::get('/workhours/details', 'getWorkhoursDetails')->name('workhours.details');
+        Route::get('invoices' ,'all_Invoices')->name('invoices.show');
+        Route::get('invoice/{id}/pdf','generatePdf')->name('invoice.pdf');
+        Route::get('/labor-types', 'getLaborTypes')->name('labor.types');
+
+
+    });
+});
 
 
 require __DIR__ . '/auth.php';
