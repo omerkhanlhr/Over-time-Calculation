@@ -121,6 +121,12 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
         Route::get('invoices' ,'all_Invoices')->name('invoices.show');
         Route::get('invoice/{id}/pdf','generatePdf')->name('invoice.pdf');
         Route::get('/labor-types', 'getLaborTypes')->name('labor.types');
+        Route::get('/invoices/{id}/pdfs' , 'showPdfs')->name('invoice.pdfs');
+        Route::get('/invoices/{id}/pdf/{breakdown_id?}','generatePdf')->name('invoice.downloadPdf');
+        Route::get('/invoice/{invoiceId}/breakdown-pdf/{breakdownId}','generateBreakdownPdf')
+        ->name('invoice.breakdown.pdf');
+        Route::get('invoices/{id}/edit', 'edit')->name('invoices.edit');
+    Route::post('invoices/{id}/update','update')->name('invoices.update');
 
 
     });

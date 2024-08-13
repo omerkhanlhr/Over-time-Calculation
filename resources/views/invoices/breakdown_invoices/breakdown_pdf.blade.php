@@ -3,32 +3,34 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Invoice</title>
+    <title>Invoice Breakdown</title>
     <style>
         body {
-    font-family: Arial, sans-serif;
-}
+            font-family: Arial, sans-serif;
+        }
 
-.invoice-box {
-    width: 100%;
-    max-width: 800px;
-    margin: auto;
-    padding: 20px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.15);
-    font-size: 16px;
-    line-height: 24px;
-}
+        .invoice-box {
+            width: 100%;
+            max-width: 800px;
+            margin: auto;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.15);
+            font-size: 16px;
+            line-height: 24px;
+        }
 
-.header {
-    display: flex;
-}
+        .header {
+            display: flex;
+            justify-content: space-between;
+            flex-direction: row-reverse; /* This line is added */
+        }
 
+        .company-details,  {
+            width: 58%;
+            float:left;
+        }
 
-.company-details {
-    width: 50%;
-    float: left;
-}
-.invoice-details{
+        .invoice-details{
     width: 50%;
     float: right;
 }
@@ -39,59 +41,57 @@
     margin-bottom: 10px;
 }
 
-.company-details h2, .invoice-details h3 {
-    margin: 0;
-}
+        .company-details h2, .invoice-details h3 {
+            margin: 0;
+        }
 
-.invoice-details p {
-    margin: 5px 0;
-}
+        .invoice-details p {
+            text-align: right;
+            /* margin-top: 20px; */
+        }
 
-.client-details {
-    margin: 20px 0;
-    display:flex;
-    justify-content: space-between;
-}
+        .client-details {
+            margin: 20px 0;
+        }
 
-.invoice-items {
-    width: 100%;
-    border-collapse: collapse;
-    margin-bottom: 20px;
-}
+        .invoice-items {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
 
-.invoice-items th, .invoice-items td {
-    border: 1px solid #ddd;
-    padding: 8px;
-}
+        .invoice-items th, .invoice-items td {
+            border: 1px solid #ddd;
+            padding: 8px;
+        }
 
-.invoice-items th {
-    background-color: black;
-    color: white;
-    text-align: left;
-}
+        .invoice-items th {
+            background-color: black;
+            color: white;
+            text-align: left;
+        }
 
-.total {
-    text-align: right;
-    margin-top: 20px;
-}
+        .total {
+            text-align: right;
+            margin-top: 20px;
+        }
 
-.total p {
-    margin: 5px 0;
-}
+        .total p {
+            margin: 5px 0;
+        }
 
-.terms {
-    margin-top: 20px;
-    font-size: 14px;
-    color: #777;
-}
-
+        .terms {
+            margin-top: 20px;
+            font-size: 14px;
+            color: #777;
+        }
     </style>
 </head>
 <body>
     <div class="invoice-box">
         <div class="header">
             <div class="company-details">
-               <img src="{{ $base64 }}" alt="Logo" >
+                <img src="{{ $base64 }}" alt="Company Logo">
                 <h4 style="margin-top:-5px">Theta Smart Corporate Solutions</h4>
                 <p style="margin-top:-20px">26920 29th Ave Aldergrove V4W3C1 Canada</p>
             </div>
@@ -100,8 +100,8 @@
                 <p style="text-align: right;">{{ $invoice->id }}</p>
                 <p style="text-align: right;">Date: {{ \Carbon\Carbon::now()->format('M d, Y') }}</p>
                 <p style="text-align: right;">Payment Terms: {{ \Carbon\Carbon::parse($invoice->from_date)->format('M d Y') }} - {{\Carbon\Carbon::parse($invoice->to_date)->format('M d Y') }}</p>
-                <p style="text-align: right;">Due Date: {{ \Carbon\Carbon::parse($invoice->due_date)->format('M d, Y') }} </p>
-                <p style="background-color: rgb(233, 230, 230); text-align: right;"><strong>Balance Due: CA$ {{ number_format($invoice->grand_total, 2) }}</strong></p>
+                <p style="text-align: right;">Due Date: {{ \Carbon\Carbon::parse($invoice->due_date)->format('M d, Y') }}</p>
+                <p style="background-color: rgb(233, 230, 230); text-align: right;"><strong>Balance Due: CA$ {{ number_format($breakdowns->sum('total_amount') , 2) }}</strong></p>
             </div>
         </div>
         <div class="client-details">
@@ -128,26 +128,27 @@
                     <td>CA${{ number_format($data['rate'], 2) }}</td>
                     <td>CA${{ number_format($data['total_amount'], 2) }}</td>
                 </tr>
+
                 @else
                     <tr>
                         <td>{{\Carbon\Carbon::parse($date)->format('M d') }} - OT</td>
-                        <td>{{ $date }} - ({{ $data['employee_count'] }} {{ $data['labor_type'] }}) </td>
+                        <td>{{ $data['employee_count'] }} {{ $data['labor_type'] }}</td>
                         <td>{{ $data['total_hours'] }}</td>
-                        <td>CA${{ number_format($data['rate'] , 2) }}</td>
-                        <td>CA${{ number_format($data['total_amount'], 2), 2 }}</td>
+                        <td>CA${{ number_format($data['rate'], 2) }}</td>
+                        <td>CA${{ number_format($data['total_amount'], 2) }}</td>
                     </tr>
                 @endif
-            @endforeach
-                </tbody>
+                @endforeach
+            </tbody>
         </table>
         <div class="total">
-            <p>Subtotal: CA$ {{ number_format($invoice->total_amount, 2) }}</p>
-            <p>Tax ( {{ number_format($invoice->tax, 2) }} ): CA$269.46</p>
-            <p>Total: CA$ {{ number_format($invoice->grand_total, 2) }} </p>
+            <p>Subtotal: CA$ {{ number_format($breakdowns->sum('subtotal'), 2) }}</p>
+            <p>Total: CA$ {{ number_format($breakdowns->sum('total_amount') , 2) }}</p>
         </div>
+
         <div class="terms">
             <p>Terms:</p>
-            <p>Payments received after the due date will be subject to a late fee of 2% percent charged monthly.</p>
+            <p>Payments received after the due date will be subject to a late fee of 2% per month.</p>
         </div>
     </div>
 </body>

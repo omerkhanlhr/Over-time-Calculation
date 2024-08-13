@@ -36,6 +36,13 @@
                                 </span>
                             </div>
                             <div class="form-group mb-3 mt-3">
+                                <label for="to_date">Due Date</label>
+                                <input type="date" name="due_date" id="due_date" class="form-control" required>
+                                <span class="text-danger">
+                                    @error('due_date') {{ $message }} @enderror
+                                </span>
+                            </div>
+                            <div class="form-group mb-3 mt-3">
                                 <label for="labor_types">Labor Type Rates</label>
                                 <div id="labor-type-rates">
                                     <!-- This will be dynamically populated -->
@@ -118,11 +125,11 @@
                         $('#labor-type-rates').html('');
                         response.labor_types.forEach(function(labor_type) {
                             $('#labor-type-rates').append(`
-                                <div class="form-group mb-3">
-                                    <label>${labor_type.name}</label>
-                                    <input type="number" name="labor_types[${labor_type.id}]" class="form-control rate-input" step="0.01" min="0" required>
-                                </div>
-                            `);
+            <div class="form-group mb-3">
+                <label>${labor_type.name}</label>
+                <input type="number" name="labor_types[${labor_type.id}]" class="form-control rate-input" step="0.01" min="0" required>
+            </div>
+        `);
                         });
                     },
                     error: function(xhr, status, error) {

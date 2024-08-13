@@ -12,13 +12,16 @@ class InvoiceBreakdown extends Model
     protected $guarded = [];
 
     protected $table = 'invoice_breakdowns';
+
     public function invoice()
     {
         return $this->belongsTo(Invoice::class);
     }
 
-    public function laborType()
+    public function labour()
     {
-        return $this->belongsTo(Labour::class);
+        return $this->belongsTo(Labour::class, 'labor_type_id');
     }
+
+    
 }

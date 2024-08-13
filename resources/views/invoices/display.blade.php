@@ -40,7 +40,10 @@
                                             <td>${{ number_format($invoice->tax, 2) }}</td>
                                             <td>${{ number_format($invoice->grand_total, 2) }}</td>
                                             <td>
-                                                <a href="{{ route('invoice.pdf', $invoice->id) }}" class="btn btn-primary">Download PDF</a>
+                                                <a href="{{ route('invoice.pdfs', $invoice->id) }}" class="btn btn-primary">View PDF's</a>
+                                                &nbsp;&nbsp;&nbsp;&nbsp;
+                                                <a href="{{route('invoices.edit',$invoice->id)}}" class="btn btn-inverse-warning"><i class="fa fa-edit" style="font-size:24px;color:yellow"></i></a>
+
 
                                             </td>
                                         </tr>

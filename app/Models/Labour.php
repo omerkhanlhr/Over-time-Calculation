@@ -17,4 +17,9 @@ class Labour extends Model
     {
         return $this->hasMany(Workhour::class);
     }
+
+    public function invoiceBreakdowns()
+{
+    return $this->hasMany(InvoiceBreakdown::class, 'labor_type_id');
+}
 }
