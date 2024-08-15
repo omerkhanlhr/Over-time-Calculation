@@ -84,10 +84,11 @@
         }
 
         .terms {
-            margin-top: 20px;
+            margin-top: 70px;
             font-size: 14px;
             color: #777;
         }
+
     </style>
 </head>
 
@@ -149,6 +150,7 @@
 
             </tbody>
         </table>
+
         <div class="total">
             @php
                 $lateFee = 0;
@@ -167,7 +169,15 @@
             @endif --}}
             <p>Total: CA$ {{ number_format($finalTotal, 2) }} </p>
             </div>
-            <div class="terms">
+            <div class="remarks" style="margin-top: -90px">
+                <span>Remarks</span>
+                @if($invoice->remarks!="")
+                    <p>{{ $invoice->remarks }}</p>
+                @else
+                <p>{{ " " }}</p>
+                @endif
+            </div>
+            <div class="terms mt-20">
                 <p>Terms:</p>
                 <p>Payments received after the due date will be subject to a late fee of 2% percent charged monthly.</p>
             </div>

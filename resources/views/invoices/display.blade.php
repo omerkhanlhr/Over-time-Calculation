@@ -20,7 +20,7 @@
                                 <thead>
                                     <tr>
                                         <th>Invoice ID</th>
-                                        <th>Client ID</th>
+                                        <th>Client Name</th>
                                         <th>Date Range</th>
                                         <th>Total Employees</th>
                                         <th>Total Amount</th>
@@ -43,7 +43,7 @@
                                                 <a href="{{ route('invoice.pdfs', $invoice->id) }}" class="btn btn-primary">View PDF's</a>
                                                 &nbsp;&nbsp;&nbsp;&nbsp;
                                                 <a href="{{route('invoices.edit',$invoice->id)}}" class="btn btn-inverse-warning"><i class="fa fa-edit" style="font-size:24px;color:yellow"></i></a>
-
+                                                <a href="{{route('delete.invoice',$invoice->id)}}" class="btn btn-inverse-danger" id="delete"><i class="fa fa-trash" style="font-size:24px;color:red"></i></a>
 
                                             </td>
                                         </tr>

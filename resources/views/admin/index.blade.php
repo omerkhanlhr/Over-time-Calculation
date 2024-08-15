@@ -56,11 +56,13 @@
                                         </div>
                                     </div>
                                 </div>
-
+                                @php
+                            $pendingInvoicesCount = App\Models\Invoice::where('status', 0)->count();
+                                @endphp
                                 <div class="row">
                                     <div class="col-6 col-md-12 col-xl-5">
                                         <h3 class="mb-2">
-                                            1
+                                            0
                                         </h3>
                                         <div class="d-flex align-items-baseline">
                                             <p class="text-success">
@@ -107,7 +109,7 @@
                                 </div>
                                 <div class="row">
                                     <div class="col-6 col-md-12 col-xl-5">
-                                        <h3 class="mb-2">2</h3>
+                                        <h3 class="mb-2">{{$pendingInvoicesCount}}</h3>
                                         <div class="d-flex align-items-baseline">
                                             <p class="text-danger">
                                                 <span>-2.8%</span>
@@ -214,7 +216,9 @@
                 <div class="card">
                     <div class="card-body">
                         <div class="d-flex justify-content-between align-items-baseline mb-2">
-
+                            @php
+                                $invoices = App\Models\Invoice::where('status',0)->get();
+                            @endphp
                             <h6 class="card-title mb-0">Invoices</h6>
                             <div class="dropdown mb-2">
                                 <a type="button" id="dropdownMenuButton7" data-bs-toggle="dropdown"
@@ -245,15 +249,34 @@
         <thead>
           <tr>
             <th>Invoice ID</th>
+            <th>Client Name</th>
             <th>Total Amount</th>
+            <th>Status</th>
+            <th>PDF</th>
           </tr>
         </thead>
         <tbody>
+            @foreach ($invoices as $invoice)
     <tr>
-        <td>1</td>
-        <td>1</td>
+        <td>{{ $invoice->id }}</td>
+        <td>{{ $invoice->client->name }}</td>
+        <td>{{ $invoice->grand_total }}</td>
+        <td>
+        @if ($invoice->status==0)
+        <span class="badge bg-warning">Pending</span>
+        @endif
+    </td>
+    <td>
+        <a href="{{ route('invoice.pdfs', $invoice->id) }}" class="btn btn-info">View PDF's</a>
+    </td>
+
+            {{-- <a href="{{route('show.invoice',$invoice->id)}}" class="btn btn-inverse-secondary" >View</a> --}}
+
+
+
 
     </tr>
+@endforeach
 
         </tbody>
       </table>

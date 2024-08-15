@@ -142,7 +142,6 @@
             </tbody>
         </table>
         <div class="total">
-            <p>Subtotal: CA$ {{ number_format($breakdowns->sum('subtotal'), 2) }}</p>
             <p>Total: CA$ {{ number_format($breakdowns->sum('total_amount') , 2) }}</p>
         </div>
 

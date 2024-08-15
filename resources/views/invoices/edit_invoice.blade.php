@@ -59,6 +59,12 @@
                             <input type="number" name="tax" class="form-control rate-input" step="0.01" min="0" value="{{ $invoice->tax }}" required>
                             <span class="text-danger">@error('tax') {{$message}} @enderror</span>
                         </div>
+                        <div class="form-group mb-3">
+                            <label for="exampleFormControlTextarea1" class="form-label">Remarks</label>
+                            <textarea class="form-control" id="exampleFormControlTextarea1" rows="3" name="remarks">
+                                {{ $invoice->remarks  }}
+                            </textarea>
+                          </div>
 
                         <button type="submit" class="btn btn-primary me-2">Update Invoice</button>
                     </form>

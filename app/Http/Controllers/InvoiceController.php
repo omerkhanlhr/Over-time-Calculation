@@ -110,6 +110,7 @@ class InvoiceController extends Controller
             'status' => 0,
             'total_amount' => $totalAmount,  // Sum of all breakdowns
             'tax' => $tax,
+            'remarks'=> $request->remarks,
             'total_employees' => $totalEmployees,
             'grand_total' => $grandTotal
         ]);
@@ -252,47 +253,74 @@ class InvoiceController extends Controller
         return $pdf->stream('invoice_' . $id . ($breakdown_id ? '_breakdown_' . $breakdown_id : '_combined') . '.pdf');
     }
 
+    public function delete_invoice($id)
+    {
+        $invoice = Invoice::findOrFail($id);
+        if($invoice)
+        {
+            $invoice->delete();
+            $notification = array(
+                'message' => 'Employee Deleted Successfully',
+                'alert-type' => 'success',
+            );
+            return redirect()->back()->with($notification);
+        }
+        else
+        {
+            $notification = array(
+                'message' => 'Something went wrong',
+                'alert-type' => 'error',
+            );
+            return redirect()->back()->with($notification);
+        }
+    }
 
-    public function generateBreakdownPdf($invoiceId, $breakdownId)
-{
-    // Fetch the invoice with its breakdowns and associated labour data
-    $invoice = Invoice::with('invoiceBreakdowns.labour')->findOrFail($invoiceId);
+    public function generateBreakdownPdf($invoiceId, $laborType)
+    {
+        // Fetch the invoice with its breakdowns and associated labour data
+        $invoice = Invoice::with('invoiceBreakdowns.labour')->findOrFail($invoiceId);
 
-    // Filter for the specific breakdown
-    $breakdowns = $invoice->invoiceBreakdowns()->where('id', $breakdownId)->get();
+        // Filter for the specific labor type
+        $breakdowns = $invoice->invoiceBreakdowns()->whereHas('labour', function ($query) use ($laborType) {
+            $query->where('name', $laborType);
+        })->get();
 
-    // Group the breakdowns by date and calculate totals
-    $groupedBreakdowns = $breakdowns->groupBy('work_date')->map(function ($items, $date) {
-        $totalHours = $items->sum('hours_worked');
-        $totalOvertime = $items->sum('overtime_hours'); // Assuming this field exists
-        $rate = $items->first()->rate;
-        $totalAmount = $items->sum('total_amount');
-        $totalOvertimeAmount = $items->where('overtime_hours', '>', 0)->sum('overtime_amount'); // Assuming this field exists
+        // Group the breakdowns by date and calculate totals
+        $groupedBreakdowns = $breakdowns->groupBy('work_date')->map(function ($items, $date) {
+            $totalHours = $items->sum('hours_worked');
+            $totalOvertime = $items->sum('overtime_hours'); // Assuming this field exists
+            $rate = $items->first()->rate;
+            $totalAmount = $items->sum('total_amount');
+            $totalOvertimeAmount = $items->where('overtime_hours', '>', 0)->sum('overtime_amount'); // Assuming this field exists
 
-        return [
-            'items' => $items,
-            'rate' => $rate,
-            'total_hours' => $totalHours,
-            'total_overtime' => $totalOvertime,
-            'employee_count' => $items->unique('employee_id')->count(),
-            'total_amount' => $totalAmount,
-            'total_overtime_amount' => $totalOvertimeAmount,
-            'labor_type' => $items->first()->labour->name // Fetch the labor type name
-        ];
-    });
+            return [
+                'items' => $items,
+                'rate' => $rate,
+                'total_hours' => $totalHours,
+                'total_overtime' => $totalOvertime,
+                'employee_count' => $items->unique('employee_id')->count(),
+                'total_amount' => $totalAmount,
+                'total_overtime_amount' => $totalOvertimeAmount,
+                'labor_type' => $items->first()->labour->name // Fetch the labor type name
+            ];
+        });
 
-    // Convert the company logo to base64
-    $path = public_path('images/logo.png');
-    $type = pathinfo($path, PATHINFO_EXTENSION);
-    $data = file_get_contents($path);
-    $base64 = 'data:image/' . $type . ';base64,' . base64_encode($data);
+        // Convert the company logo to base64
+        $path = public_path('images/logo.png');
+        $type = pathinfo($path, PATHINFO_EXTENSION);
+        $data = file_get_contents($path);
+        $base64 = 'data:image/' . $type . ';base64,' . base64_encode($data);
 
-    // Load the breakdown PDF view and pass the required data
-    $pdf = PDF::loadView('invoices.breakdown_invoices.breakdown_pdf', compact('invoice', 'groupedBreakdowns', 'base64', 'breakdowns'));
+        // Load the breakdown PDF view and pass the required data
+        $pdf = PDF::loadView('invoices.breakdown_invoices.breakdown_pdf', compact('invoice', 'groupedBreakdowns', 'base64', 'breakdowns'));
 
-    // Stream the PDF as a download
-    return $pdf->stream('invoice_' . $invoiceId . '_breakdown_' . $breakdownId . '.pdf');
-}
+        // Stream the PDF as a download
+        return $pdf->stream('invoice_' . $invoiceId . '_breakdown_' . $laborType . '.pdf');
+    }
+
+
+
+
 
 
     public function edit($id)
@@ -333,6 +361,7 @@ class InvoiceController extends Controller
             'due_date' => $request->due_date,
             'total_amount' => $invoice->total_amount,
             'tax' => $tax,
+            'remarks' => $request->remarks,
             'status' => $request->status,
             'grand_total' => $grandTotal,
         ]);
@@ -349,6 +378,11 @@ class InvoiceController extends Controller
     {
         $invoice = Invoice::with('invoiceBreakdowns.labour')->findOrFail($id);
 
-        return view('invoices.breakdown_invoices.all_pdfs', compact('invoice'));
+        // Group breakdowns by labor type
+        $groupedBreakdowns = $invoice->invoiceBreakdowns->groupBy(function ($breakdown) {
+            return $breakdown->labour->name;
+        });
+
+        return view('invoices.breakdown_invoices.all_pdfs', compact('invoice', 'groupedBreakdowns'));
     }
 }

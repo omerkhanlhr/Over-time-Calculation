@@ -56,6 +56,12 @@
                                     @error('tax') {{$message}} @enderror
                                 </span>
                             </div>
+                            <div class="form-group mb-3">
+                                <label for="exampleFormControlTextarea1" class="form-label">Remarks</label>
+                                <textarea class="form-control" id="exampleFormControlTextarea1" rows="3" name="remarks">
+
+                                </textarea>
+                              </div>
 
                             <button type="submit" class="btn btn-primary me-2">Add Invoice</button>
                         </form>

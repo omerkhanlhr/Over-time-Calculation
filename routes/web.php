@@ -116,6 +116,7 @@ Route::middleware('auth', 'role:admin')->group(function () {
 
 Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::controller(InvoiceController::class)->group(function () {
+        Route::get('/delete/invoice/{id}', 'delete_invoice')->name('delete.invoice');
         Route::get('invoices/create' ,'create_invoice')->name('invoices.create');
         Route::post('invoices/store' , 'createInvoice')->name('invoices.store');
         Route::get('/workhours/details', 'getWorkhoursDetails')->name('workhours.details');
@@ -124,21 +125,22 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
         Route::get('/labor-types', 'getLaborTypes')->name('labor.types');
         Route::get('/invoices/{id}/pdfs' , 'showPdfs')->name('invoice.pdfs');
         Route::get('/invoices/{id}/pdf/{breakdown_id?}','generatePdf')->name('invoice.downloadPdf');
-        Route::get('/invoice/{invoiceId}/breakdown-pdf/{breakdownId}','generateBreakdownPdf')
-        ->name('invoice.breakdown.pdf');
+       Route::get('/invoice/{invoiceId}/breakdown-pdf/{laborType}', 'generateBreakdownPdf')
+    ->name('invoice.breakdown.pdf');
+
         Route::get('invoices/{id}/edit', 'edit')->name('invoices.edit');
     Route::post('invoices/{id}/update','update')->name('invoices.update');
 
     });
 });
 
-Route::middleware(['auth', 'role:admin'])->group(function () {
-    Route::controller(InvoiceBreakdownController::class)->group(function () {
-        Route::get('/edit/invoice/breakdown/{id}', 'editInvoiceBreakdown')->name('invoice.breakdown.edit');
-        Route::post('/update/invoice/breakdown/{id}', 'updateInvoiceBreakdownRate')->name('invoice.breakdown.update');
-        Route::get('/delete/invoice/breakdown/{id}', 'deleteInvoiceBreakdown')->name('invoice.breakdown.delete');
+// Route::middleware(['auth', 'role:admin'])->group(function () {
+//     Route::controller(InvoiceBreakdownController::class)->group(function () {
+//         Route::get('/edit/invoice/breakdown/{id}', 'editInvoiceBreakdown')->name('invoice.breakdown.edit');
+//         Route::post('/update/invoice/breakdown/{id}', 'updateInvoiceBreakdownRate')->name('invoice.breakdown.update');
+//         Route::get('/delete/invoice/breakdown/{id}', 'deleteInvoiceBreakdown')->name('invoice.breakdown.delete');
 
-    });
-});
+//     });
+// });
 
 require __DIR__ . '/auth.php';

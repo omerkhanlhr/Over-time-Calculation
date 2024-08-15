@@ -221,6 +221,7 @@ class StatsController extends Controller
 
         return redirect()->route('display.stats.hours')->with($notification);
     }
+
     public function moveToWorkHours($id)
     {
         $stat = Stats::findOrFail($id);
