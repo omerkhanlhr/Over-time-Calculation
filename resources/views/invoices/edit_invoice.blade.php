@@ -35,24 +35,24 @@
                             <input type="date" name="to_date" id="to_date" class="form-control" value="{{ $invoice->to_date }}" required>
                             <span class="text-danger">@error('to_date') {{ $message }} @enderror</span>
                         </div>
-
                         <div class="form-group mb-3 mt-3">
-                            <label for="due_date">Due Date</label>
+                            <label for="to_date">Due Date</label>
                             <input type="date" name="due_date" id="due_date" class="form-control" value="{{ $invoice->due_date }}" required>
                             <span class="text-danger">@error('due_date') {{ $message }} @enderror</span>
                         </div>
 
-                        <div class="form-group mb-3 mt-3">
-                            <label for="labor_types">Labor Type Rates</label>
-                            <div id="labor-type-rates">
-                                @foreach($invoice->invoiceBreakdowns as $breakdown)
-                                    <div class="form-group mb-3">
-                                        <label>{{ $breakdown->labour->name }}</label>
-                                        <input type="number" name="labor_types[{{ $breakdown->labor_type_id }}]" class="form-control rate-input" step="0.01" min="0" value="{{ $breakdown->rate }}" required>
-                                    </div>
-                                @endforeach
-                            </div>
+                        <div class="form-group mb-3">
+                            <label for="status" class="form-label">Status</label>
+                            <select name="status" id="exampleFormControlSelect1" class="form-select">
+
+                                <option selected disabled>Select Status</option>
+]
+                                <option value="1"{{$invoice->status==1? 'selected' : ''}}>Complete</option>
+                                <option value="0"{{$invoice->status==0? 'selected' : ''}}>Pending</option>
+
+                            </select>
                         </div>
+
 
                         <div class="form-group mb-3">
                             <label for="rate">GST Tax</label>
@@ -67,84 +67,7 @@
         </div>
     </div>
 
-    <div class="col-md-8 col-xl-8 middle-wrapper mt-3">
-        <div class="row">
-            <div class="card">
-                <div class="card-body">
-                    <h6 class="card-title">Work Hours Details</h6>
-
-                    <div id="workhours-details">
-                        <p><strong>Total Employees:</strong> <span id="total-employees">{{ $invoice->total_employees }}</span></p>
-                        <p><strong>Total Amount:</strong> $<span id="total-amount">{{ number_format($invoice->grand_total, 2) }}</span></p>
-                    </div>
-
-                </div>
-            </div>
-        </div>
-    </div>
 </div>
 
-<script>
-    $(document).ready(function() {
 
-     function fetchWorkhoursDetails() {
-         var client_id = $('#client_id').val();
-         var from_date = $('#from_date').val();
-         var to_date = $('#to_date').val();
-
-         if (client_id && from_date && to_date) {
-             console.log('Request Data:', { client_id, from_date, to_date }); // Check request data
-             $.ajax({
-                 url: "{{ route('workhours.details') }}",
-                 method: 'GET',
-                 data: {
-                     client_id: client_id,
-                     from_date: from_date,
-                     to_date: to_date,
-                 },
-                 success: function(response) {
-                     console.log('Response Data:', response); // Check response data
-                     $('#total-employees').text(response.total_employees);
-                     $('#total-amount').text(response.total_amount.toFixed(2));
-                 },
-                 error: function(xhr, status, error) {
-                     console.log('AJAX Error:', error); // Log any AJAX errors
-                 }
-             });
-         }
-
-         if (client_id && from_date && to_date) {
-                 $.ajax({
-                     url: "{{ route('labor.types') }}",
-                      method: 'GET',
-                     data: {
-                         client_id: client_id,
-                         from_date: from_date,
-                         to_date: to_date,
-                     },
-                     success: function(response) {
-                         $('#labor-type-rates').html('');
-                         response.labor_types.forEach(function(labor_type) {
-                             $('#labor-type-rates').append(`
-             <div class="form-group mb-3">
-                 <label>${labor_type.name}</label>
-                 <input type="number" name="labor_types[${labor_type.id}]" class="form-control rate-input" step="0.01" min="0" required>
-             </div>
-         `);
-                         });
-                     },
-                     error: function(xhr, status, error) {
-                         console.log('AJAX Error:', error);
-                     }
-                 });
-             }
-     }
-
-     // Fetch workhours details on change of client or date range
-     $('#client_id, #from_date, #to_date').change(function() {
-         fetchWorkhoursDetails();
-     });
- });
-
- </script>
 @endsection

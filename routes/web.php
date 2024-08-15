@@ -4,6 +4,7 @@ use App\Http\Controllers\AdminController;
 use App\Http\Controllers\ClientController;
 use App\Http\Controllers\DesignationController;
 use App\Http\Controllers\EmployeeController;
+use App\Http\Controllers\InvoiceBreakdownController;
 use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\LabourTypeController;
 use App\Http\Controllers\PDFController;
@@ -128,9 +129,16 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
         Route::get('invoices/{id}/edit', 'edit')->name('invoices.edit');
     Route::post('invoices/{id}/update','update')->name('invoices.update');
 
-
     });
 });
 
+Route::middleware(['auth', 'role:admin'])->group(function () {
+    Route::controller(InvoiceBreakdownController::class)->group(function () {
+        Route::get('/edit/invoice/breakdown/{id}', 'editInvoiceBreakdown')->name('invoice.breakdown.edit');
+        Route::post('/update/invoice/breakdown/{id}', 'updateInvoiceBreakdownRate')->name('invoice.breakdown.update');
+        Route::get('/delete/invoice/breakdown/{id}', 'deleteInvoiceBreakdown')->name('invoice.breakdown.delete');
+
+    });
+});
 
 require __DIR__ . '/auth.php';
