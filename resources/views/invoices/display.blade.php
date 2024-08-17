@@ -22,7 +22,6 @@
                                         <th>Invoice ID</th>
                                         <th>Client Name</th>
                                         <th>Date Range</th>
-                                        <th>Total Employees</th>
                                         <th>Total Amount</th>
                                         <th>Tax</th>
                                         <th>Grand Total</th>
@@ -35,14 +34,14 @@
                                             <td>{{ $invoice->id }}</td>
                                             <td>{{ $invoice->client->name }}</td>
                                             <td>{{ $invoice->from_date }} - {{ $invoice->to_date }}</td>
-                                            <td>{{ $invoice->total_employees }}</td>
                                             <td>${{ number_format($invoice->total_amount, 2) }}</td>
                                             <td>${{ number_format($invoice->tax, 2) }}</td>
                                             <td>${{ number_format($invoice->grand_total, 2) }}</td>
                                             <td>
                                                 <a href="{{ route('invoice.pdfs', $invoice->id) }}" class="btn btn-primary">View PDF's</a>
-                                                &nbsp;&nbsp;&nbsp;&nbsp;
+                                                &nbsp;
                                                 <a href="{{route('invoices.edit',$invoice->id)}}" class="btn btn-inverse-warning"><i class="fa fa-edit" style="font-size:24px;color:yellow"></i></a>
+                                                &nbsp;
                                                 <a href="{{route('delete.invoice',$invoice->id)}}" class="btn btn-inverse-danger" id="delete"><i class="fa fa-trash" style="font-size:24px;color:red"></i></a>
 
                                             </td>

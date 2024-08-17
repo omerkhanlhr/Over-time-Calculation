@@ -6,7 +6,9 @@
         <ol class="breadcrumb">
             <a href="{{route('add.employee')}}" class="btn btn-inverse-info">Add Employee</a>
             &nbsp;&nbsp;&nbsp;&nbsp;
-    {{-- {{--        <a href="{{route('export.user')}}" class="btn btn-success">Export Users</a> --}}
+          <a href="{{route('export.employee')}}" class="btn btn-success">Export Employees</a>
+          &nbsp;&nbsp;&nbsp;&nbsp;
+          <a href="{{route('import.employee')}}" class="btn btn-success">Import Employees</a>
         </ol>
     </nav>
 

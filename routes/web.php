@@ -31,7 +31,9 @@ Route::middleware('auth')->group(function () {
 Route::middleware(['auth', 'role:admin'])->group(function () {
 
     Route::get('/admin/dashboard', [AdminController::class, 'index'])->name('admin.dashboard');
-    Route::get('/export/user', [AdminController::class, 'export_user'])->name('export.users');
+    Route::get('/export/employee', [AdminController::class, 'export_employee'])->name('export.employee');
+    Route::get('/import/employee', [AdminController::class, 'import_employee'])->name('import.employee');
+    Route::post('/import/employee/data', [AdminController::class, 'save_import_employee'])->name('save.import.employee');
     Route::get('/admin/logout', [AdminController::class, 'logout'])->name('admin.logout');
     Route::get('/admin/profile', [AdminController::class, 'profile'])->name('admin.profile');
     Route::post('/admin/profile/update', [AdminController::class, 'update_profile'])->name('update.admin_profile');
@@ -76,8 +78,10 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
 
 Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::controller(WorkHourController::class)->group(function () {
-
+        Route::get('/import/workhour',  'import_workhour')->name('import.workhour');
+        Route::post('/import/workhour/data',  'save_import_workhour')->name('save.import.workhour');
         Route::get('add-work-hours', 'create_workhour')->name('add.work.hours');
+        Route::get('calculate-overtime/{id}', 'calculate_overtime')->name('calculate.overtime');
         Route::get('single-work-hours-details/{id}', 'single_Workdetails')->name('single.work.hours.details');
         Route::post('store-work-hours', 'store_workhour')->name('store.work.hours');
         Route::get('/search-clients', 'searchClients')->name('search.clients');

@@ -5,6 +5,8 @@
     <nav class="page-breadcrumb">
         <ol class="breadcrumb">
             <a href="{{route('add.work.hours')}}" class="btn btn-inverse-info">Add WorkHours</a>
+            &nbsp;&nbsp;&nbsp;
+            <a href="{{route('import.workhour')}}" class="btn btn-success">Import WorkHours</a>
         </ol>
     </nav>
 
@@ -23,10 +25,8 @@
                                     <th>Employee Name</th>
                                     <th>Rate</th>
                                     <th>Work Date</th>
-                                    <th>Overtime</th>
-                                    <th>Weekly Workhours</th>
-                                    <th>Weekly Overtime</th>
                                     <th>Total Amount</th>
+                                    <th>Overtime</th>
                                     <th>Actions</th>
 
           </tr>
@@ -39,10 +39,11 @@
                 <td>{{ $workhour->employee->name }}</td>
                 <td>{{ $workhour->rate }}</td>
                 <td>{{ $workhour->work_date }}</td>
-                <td>{{ $workhour->overtime ? 'Yes' : 'No' }}</td>
-                <td>{{ $workhour->weekly_workhours }}</td>
-                <td>{{ $workhour->weekly_overtime }}</td>
                 <td>${{ $workhour->total_amount }}</td>
+                <td>
+        <a href="{{ route('calculate.overtime',$workhour->id) }}">Calculate Overtime</a>
+
+                </td>
                 <td>
                     <a href="{{route('edit.work.hours',$workhour->id)}}" class="btn btn-inverse-warning"><i class="fa fa-edit" style="font-size:24px;color:yellow"></i></a>
                     <a href="{{route('single.work.hours.details',$workhour->id)}}" class="btn btn-inverse-warning"><i class="fa fa-eye" style="font-size:24px;color:yellow"></i></a>

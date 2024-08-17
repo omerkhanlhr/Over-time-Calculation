@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Imports\WorkhourImport;
 use App\Models\Client;
 use App\Models\Employee;
 use App\Models\Labour;
@@ -9,9 +10,27 @@ use App\Models\Workhour;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Maatwebsite\Excel\Facades\Excel;
 
 class WorkHourController extends Controller
 {
+
+    public function import_workhour()
+    {
+        return view('workhours.import_workhour');
+    }
+
+
+public function save_import_workhour(Request $request)
+    {
+        Excel::import(new WorkhourImport, $request->file('file'));
+        $notification = [
+            'message' => "Data Inserted Successfully",
+            'alert-type' => 'success'
+        ];
+        return redirect()->back()->with($notification);
+    }
+
     public function create_workhour()
     {
         $labours = Labour::all();
@@ -38,6 +57,8 @@ class WorkHourController extends Controller
         'check_out_time.*' => 'required|date_format:H:i',
         'break_time.*' => 'nullable|integer|min:0', // Validate break time in minutes
     ]);
+
+    dd($request->all());
 
     $overworkedEntries = [];
 

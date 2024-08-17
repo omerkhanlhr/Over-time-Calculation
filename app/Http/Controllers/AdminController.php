@@ -3,10 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Exports\ClientsExport;
+use App\Exports\EmployeeExport;
 use App\Exports\InvoicesExport;
 use App\Exports\PaymentsExport;
 use App\Exports\ProductsExport;
 use App\Exports\UsersExport;
+use App\Imports\EmployeeImport;
+use App\Models\Employee;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -16,10 +19,88 @@ use Maatwebsite\Excel\Facades\Excel;
 
 class AdminController extends Controller
 {
+    public function save_import_employee(Request $request)
+{
+    $file = $request->file('file');
 
-    public function export_user()
+    // Load the data from the Excel file without importing it
+    $data = Excel::toArray([], $file)[0]; // Assuming the first sheet
+
+    // Collect existing emails and phone numbers from the database
+    $existingEmails = Employee::pluck('email')->toArray();
+    $existingPhones = Employee::pluck('phone')->toArray();
+
+    $duplicateEmails = [];
+    $duplicatePhones = [];
+
+    // Track duplicates within the file itself
+    $fileEmails = [];
+    $filePhones = [];
+
+    foreach ($data as $row) {
+        $email = $row[1] ?? null;
+        $phone = $row[2] ?? null;
+
+        // Check for duplicate emails in the file
+        if ($email && in_array($email, $fileEmails)) {
+            $duplicateEmails[] = $email;
+        } else {
+            $fileEmails[] = $email;
+        }
+
+        // Check for duplicate phones in the file
+        if ($phone && in_array($phone, $filePhones)) {
+            $duplicatePhones[] = $phone;
+        } else {
+            $filePhones[] = $phone;
+        }
+
+        // Check for existing emails in the database
+        if ($email && in_array($email, $existingEmails)) {
+            $duplicateEmails[] = $email;
+        }
+
+        // Check for existing phones in the database
+        if ($phone && in_array($phone, $existingPhones)) {
+            $duplicatePhones[] = $phone;
+        }
+    }
+
+    // If there are duplicates, return an error message
+    if (!empty($duplicateEmails) || !empty($duplicatePhones)) {
+        $errorMessage = 'The file contains duplicate or existing data.';
+
+        if (!empty($duplicateEmails)) {
+            $errorMessage .= ' Duplicate emails: ' . implode(', ', array_unique($duplicateEmails)) . '.';
+        }
+
+        if (!empty($duplicatePhones)) {
+            $errorMessage .= ' Duplicate phones: ' . implode(', ', array_unique($duplicatePhones)) . '.';
+        }
+
+        return redirect()->back()->withErrors(['file' => $errorMessage]);
+    }
+
+    // If no duplicates are found, proceed with the import
+    Excel::import(new EmployeeImport, $file);
+
+    $notification = [
+        'message' => "Data Inserted Successfully",
+        'alert-type' => 'success'
+    ];
+
+    return redirect()->back()->with($notification);
+}
+
+
+    public function import_employee()
     {
-        return Excel::download(new UsersExport, 'users.xlsx');
+        return view('employees.import_employees');
+    }
+
+    public function export_employee()
+    {
+        return Excel::download(new EmployeeExport, 'employees.xlsx');
     }
 
     public function index()

@@ -121,21 +121,20 @@
             <tbody>
                 @foreach ($groupedBreakdowns as $date => $data)
                 <tr>
-                    @if( $data['total_hours'] < 8 )
                     <td>{{\Carbon\Carbon::parse($date)->format('M d') }}</td>
                     <td> {{ $data['employee_count'] }} {{ $data['labor_type'] }}</td>
                     <td>{{ $data['total_hours'] }}</td>
                     <td>CA${{ number_format($data['rate'], 2) }}</td>
-                    <td>CA${{ number_format($data['total_amount'], 2) }}</td>
+                    <td>CA${{ number_format($data['subtotal'], 2) }}</td>
                 </tr>
 
-                @else
+                @if($data['total_overtime'] > 0)
                     <tr>
                         <td>{{\Carbon\Carbon::parse($date)->format('M d') }} - OT</td>
                         <td>{{ $data['employee_count'] }} {{ $data['labor_type'] }}</td>
-                        <td>{{ $data['total_hours'] }}</td>
+                        <td>{{ $data['total_overtime'] }}</td>
                         <td>CA${{ number_format($data['rate'], 2) }}</td>
-                        <td>CA${{ number_format($data['total_amount'], 2) }}</td>
+                        <td>CA${{ number_format($data['total_overtime_amount'], 2) }}</td>
                     </tr>
                 @endif
                 @endforeach
