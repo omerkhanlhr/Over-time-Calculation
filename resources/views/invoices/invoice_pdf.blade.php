@@ -100,6 +100,15 @@
                 <h4 style="margin-top:-5px">Theta Smart Corporate Solutions</h4>
                 <p style="margin-top:-20px">26920 29th Ave Aldergrove V4W3C1 Canada</p>
             </div>
+            @php
+                $lateFee = 0;
+
+                if ($invoice->status == 0 && \Carbon\Carbon::now()->gt(\Carbon\Carbon::parse($invoice->due_date))) {
+                    $lateFee = $invoice->grand_total * 0.02; // 2% late fee
+                }
+
+                $finalTotal = $invoice->grand_total + $lateFee;
+            @endphp
             <div class="invoice-details">
                 <h3 style="text-align: right;">INVOICE</h3>
                 <p style="text-align: right;">{{ $invoice->id }}</p>
@@ -110,7 +119,7 @@
                 <p style="text-align: right;">Due Date:
                     {{ \Carbon\Carbon::parse($invoice->due_date)->format('M d, Y') }} </p>
                 <p style="background-color: rgb(233, 230, 230); text-align: right;"><strong>Balance Due: CA$
-                        {{ number_format($invoice->grand_total, 2) }}</strong></p>
+                        {{ number_format($finalTotal, 2) }}</strong></p>
             </div>
         </div>
         <div class="client-details">
@@ -151,15 +160,7 @@
         </table>
 
         <div class="total">
-            @php
-                $lateFee = 0;
 
-                if ($invoice->status == 0 && \Carbon\Carbon::now()->gt(\Carbon\Carbon::parse($invoice->due_date))) {
-                    $lateFee = $invoice->grand_total * 0.02; // 2% late fee
-                }
-
-                $finalTotal = $invoice->grand_total + $lateFee;
-            @endphp
 
             <p>Subtotal: CA$ {{ number_format($invoice->total_amount, 2) }}</p>
             <p>Tax ( {{ number_format($invoice->tax, 2) }}% )</p>

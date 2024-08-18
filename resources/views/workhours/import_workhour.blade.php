@@ -26,7 +26,7 @@
                             </div>
 
 
-                            <button type="submit" class="btn btn-primary">Add Employee</button>
+                            <button type="submit" class="btn btn-primary">Import Now</button>
                         </form>
 
 

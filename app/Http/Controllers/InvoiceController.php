@@ -206,15 +206,11 @@ class InvoiceController extends Controller
             'labor_types' => $labor_types,
         ]);
     }
-    public function generatePdf($id, $breakdown_id = null)
+    public function previewPdf($id)
     {
         $invoice = Invoice::with('invoiceBreakdowns.labour')->findOrFail($id);
 
-        if ($breakdown_id) {
-            $breakdowns = $invoice->invoiceBreakdowns()->where('id', $breakdown_id)->get();
-        } else {
             $breakdowns = $invoice->invoiceBreakdowns;
-        }
 
         // Group the breakdowns by date and labor type
         $groupedBreakdowns = $breakdowns->groupBy(function ($breakdown) {
@@ -249,10 +245,55 @@ class InvoiceController extends Controller
         $data = file_get_contents($path);
         $base64 = 'data:image/' . $type . ';base64,' . base64_encode($data);
 
-        $pdfView = $breakdown_id ? 'invoices.breakdown_invoices.breakdown_pdf' : 'invoices.invoice_pdf';
+        $pdfView = 'invoices.invoice_pdf';
         $pdf = PDF::loadView($pdfView, compact('invoice', 'groupedBreakdowns', 'breakdowns', 'base64'));
 
-        return $pdf->stream('invoice_' . $id . ($breakdown_id ? '_breakdown_' . $breakdown_id : '_combined') . '.pdf');
+        return $pdf->stream('invoice_' . $id);
+    }
+
+    public function downloadPdf($id)
+    {
+        $invoice = Invoice::with('invoiceBreakdowns.labour')->findOrFail($id);
+
+            $breakdowns = $invoice->invoiceBreakdowns;
+
+        // Group the breakdowns by date and labor type
+        $groupedBreakdowns = $breakdowns->groupBy(function ($breakdown) {
+            return $breakdown->work_date . '_' . $breakdown->labour->name;
+        })->map(function ($items, $key) {
+            $dateAndType = explode('_', $key);
+            $workDate = $dateAndType[0];
+            $laborType = $dateAndType[1];
+
+            $totalHours = $items->sum('hours_worked');
+            $totalOvertime = $items->sum('overtime_work'); // Assuming this field exists
+            $rate = $items->first()->rate;
+            $totalAmount = $items->sum('subtotal');
+            $totalOvertimeAmount = $items->where('overtime_work', '>', 0)->sum('overtime_amount'); // Assuming this field exists
+
+            return [
+                'items' => $items,
+                'rate' => $rate,
+                'total_hours' => $totalHours,
+                'total_overtime' => $totalOvertime,
+                'employee_count' => $items->unique('employee_id')->count(),
+                'total_amount' => $totalAmount,
+                'total_overtime_amount' => $totalOvertimeAmount,
+                'labor_type' => $laborType,
+                'work_date' => $workDate,
+            ];
+        });
+
+        // Handle logo
+        $path = public_path('images/logo.png');
+        $type = pathinfo($path, PATHINFO_EXTENSION);
+        $data = file_get_contents($path);
+        $base64 = 'data:image/' . $type . ';base64,' . base64_encode($data);
+
+        $pdfView = 'invoices.invoice_pdf';
+        $pdf = PDF::loadView($pdfView, compact('invoice', 'groupedBreakdowns', 'breakdowns', 'base64'));
+
+        return $pdf->download('invoice_' . $id.'.pdf');
     }
 
     public function delete_invoice($id)
@@ -277,7 +318,7 @@ class InvoiceController extends Controller
         }
     }
 
-    public function generateBreakdownPdf($invoiceId, $laborType)
+    public function previewBreakdownPdf($invoiceId, $laborType)
     {
         // Fetch the invoice with its breakdowns and associated labour data
         $invoice = Invoice::with('invoiceBreakdowns.labour')->findOrFail($invoiceId);
@@ -318,14 +359,51 @@ class InvoiceController extends Controller
         // Load the breakdown PDF view and pass the required data
         $pdf = PDF::loadView('invoices.breakdown_invoices.breakdown_pdf', compact('invoice', 'groupedBreakdowns', 'base64', 'breakdowns'));
 
-        // Stream the PDF as a download
         return $pdf->stream('invoice_' . $invoiceId . '_breakdown_' . $laborType . '.pdf');
     }
 
+    public function downloadBreakdownPdf($invoiceId, $laborType)
+    {
+        // Fetch the invoice with its breakdowns and associated labour data
+        $invoice = Invoice::with('invoiceBreakdowns.labour')->findOrFail($invoiceId);
 
+        // Filter for the specific labor type
+        $breakdowns = $invoice->invoiceBreakdowns()->whereHas('labour', function ($query) use ($laborType) {
+            $query->where('name', $laborType);
+        })->get();
 
+        // Group the breakdowns by date and calculate totals
+        $groupedBreakdowns = $breakdowns->groupBy('work_date')->map(function ($items, $date) {
+            $totalHours = $items->sum('hours_worked');
+            $totalOvertime = $items->sum('overtime_work'); // Assuming this field exists
+            $rate = $items->first()->rate;
+            $subtotal = $items->sum('subtotal');
+            $totalAmount = $items->sum('total_amount');
+            $totalOvertimeAmount = $items->where('overtime_work', '>', 0)->sum('overtime_amount'); // Assuming this field exists
 
+            return [
+                'items' => $items,
+                'rate' => $rate,
+                'total_hours' => $totalHours,
+                'total_overtime' => $totalOvertime,
+                'employee_count' => $items->unique('employee_id')->count(),
+                'subtotal' => $subtotal,
+                'total_amount' => $totalAmount,
+                'total_overtime_amount' => $totalOvertimeAmount,
+                'labor_type' => $items->first()->labour->name // Fetch the labor type name
+            ];
+        });
 
+        // Convert the company logo to base64
+        $path = public_path('images/logo.png');
+        $type = pathinfo($path, PATHINFO_EXTENSION);
+        $data = file_get_contents($path);
+        $base64 = 'data:image/' . $type . ';base64,' . base64_encode($data);
+
+        $pdf = PDF::loadView('invoices.breakdown_invoices.breakdown_pdf', compact('invoice', 'groupedBreakdowns', 'base64', 'breakdowns'));
+
+        return $pdf->download('invoice ' . $invoiceId .' '. $laborType . '.pdf');
+    }
 
     public function edit($id)
     {

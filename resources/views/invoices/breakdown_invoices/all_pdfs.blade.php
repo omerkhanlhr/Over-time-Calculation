@@ -16,8 +16,7 @@
                                     <th>Total Hours Worked</th>
                                     <th>Rate</th>
                                     <th>Total Amount</th>
-                                    <th>View PDF</th>
-                                    {{-- <th>Actions</th> --}}
+                                    <th>Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -33,22 +32,13 @@
                                         <td>${{ number_format($rate, 2) }}</td>
                                         <td>${{ number_format($totalAmount, 2) }}</td>
                                         <td>
-                                            <a href="{{ route('invoice.breakdown.pdf', ['invoiceId' => $invoice->id, 'laborType' => $laborType]) }}"
+                                            <a href="{{ route('invoice.breakdown.preview.pdf', ['invoiceId' => $invoice->id, 'laborType' => $laborType]) }}"
                                                 class="btn btn-primary" target="_blank">View PDF</a>
+                                           &nbsp;&nbsp;
+                                                <a href="{{ route('invoice.breakdown.download.pdf', ['invoiceId' => $invoice->id, 'laborType' => $laborType]) }}"
+                                                class="btn btn-info" target="_blank">Download PDF</a>
                                         </td>
-                                         {{-- <td>
-                                            <!-- Iterate over breakdowns to get the ID for edit and delete -->
-                                           @foreach ($breakdowns as $breakdown)
-                                                <a href="{{ route('invoice.breakdown.delete', ['id' => $breakdown->id]) }}" class="btn btn-inverse-danger" id="delete">
-                                                    <i class="fa fa-trash" style="font-size:24px;color:red"></i>
-                                                </a>
-                                                <a href="{{ route('invoice.breakdown.edit', ['id' => $breakdown->id]) }}" class="btn btn-inverse-warning">
-                                                    <i class="fa fa-edit" style="font-size:24px;color:yellow"></i>
-                                                </a>
-                                                <!-- Since you're editing/deleting individual breakdowns, no need to loop further -->
-                                                @break
-                                             @endforeach
-                                        </td> --}}
+
                                     </tr>
                                 @endforeach
                             </tbody>
@@ -56,8 +46,12 @@
                     </div>
 
                     <div class="mt-4">
-                        <a href="{{ route('invoice.downloadPdf', ['id' => $invoice->id]) }}" class="btn btn-success" target="_blank">View
+                        <a href="{{ route('invoice.previewPdf', ['id' => $invoice->id]) }}" class="btn btn-primary" target="_blank">View
                             Combined PDF</a>
+                            &nbsp;&nbsp;&nbsp;
+                        <a href="{{ route('invoice.downloadPdf', ['id' => $invoice->id]) }}" class="btn btn-info" >Download
+                            Combined PDF</a>
+
                     </div>
 
                 </div>
