@@ -31,9 +31,11 @@
                                 <tbody>
                                     @foreach ($invoices as $invoice)
                                         <tr>
-                                            <td>{{ $invoice->id }}</td>
+                                            <td>
+                                                <a href="{{ route('show.invoice',$invoice->id) }}">{{$invoice->id}}</a>
+                                            </td>
                                             <td>{{ $invoice->client->name }}</td>
-                                            <td>{{ $invoice->from_date }} - {{ $invoice->to_date }}</td>
+                                            <td>{{ \Carbon\Carbon::parse($invoice->from_date)->format('M d') }} - {{ \Carbon\Carbon::parse($invoice->to_date)->format('M d') }}</td>
                                             <td>${{ number_format($invoice->total_amount, 2) }}</td>
                                             <td>${{ number_format($invoice->tax, 2) }}</td>
                                             <td>${{ number_format($invoice->grand_total, 2) }}</td>

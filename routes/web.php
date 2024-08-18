@@ -121,6 +121,8 @@ Route::middleware('auth', 'role:admin')->group(function () {
 Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::controller(InvoiceController::class)->group(function () {
         Route::get('/delete/invoice/{id}', 'delete_invoice')->name('delete.invoice');
+        Route::get('/payment/invoice/{id}', 'payment_invoice')->name('payment.invoice');
+        Route::get('invoice/{id}', 'show_invoice')->name('show.invoice');
         Route::get('invoices/create' ,'create_invoice')->name('invoices.create');
         Route::post('invoices/store' , 'createInvoice')->name('invoices.store');
         Route::get('/workhours/details', 'getWorkhoursDetails')->name('workhours.details');

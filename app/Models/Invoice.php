@@ -18,6 +18,11 @@ class Invoice extends Model
         return $this->belongsTo(Client::class);
     }
 
+    public function payments()
+    {
+        return $this->hasMany(Payment::class);
+    }
+
     public function workhours()
     {
         return $this->hasMany(Workhour::class, 'client_id', 'client_id');

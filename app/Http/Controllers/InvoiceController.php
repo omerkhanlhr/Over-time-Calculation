@@ -6,6 +6,7 @@ use App\Models\Client;
 use App\Models\Invoice;
 use App\Models\InvoiceBreakdown;
 use App\Models\Labour;
+use App\Models\Payment;
 use App\Models\Workhour;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -466,5 +467,60 @@ class InvoiceController extends Controller
         });
 
         return view('invoices.breakdown_invoices.all_pdfs', compact('invoice', 'groupedBreakdowns'));
+    }
+
+    public function payment_invoice($id)
+    {
+        $invoice = Invoice::findOrFail($id);
+
+        $lateFee = 0;
+
+        if ($invoice->status == 0 && \Carbon\Carbon::now()->gt(\Carbon\Carbon::parse($invoice->due_date)))
+        {
+            $lateFee = $invoice->grand_total * 0.02; // 2% late fee
+        }
+
+        $finalTotal = $invoice->grand_total + $lateFee;
+
+        $payment = new Payment();
+
+        $payment->invoice_id = $invoice->id;
+
+        $payment->amount = $finalTotal;
+
+        $payment->payment_date = date('Y-m-d');
+
+       $check = $payment->save();
+
+       if($check)
+       {
+        $invoice->status=1;
+
+        $invoice->save();
+
+        $notification = array(
+            'message' => 'Payment Added Successfully',
+            'alert-type' => 'success',
+        );
+        return redirect()->back()->with($notification);
+       }
+       else
+       {
+
+        $notification = array(
+            'message' => 'Something Went Wrong',
+            'alert-type' => 'error',
+        );
+        return redirect()->back()->with($notification);
+       }
+    }
+
+    public function show_invoice($id)
+    {
+        $invoice = Invoice::with(['client'])->findOrFail($id);
+
+        $payments = Payment::where('invoice_id',$id)->get();
+
+        return view('invoices.single_invoice', ['invoice' => $invoice , 'payments' => $payments]);
     }
 }
