@@ -58,7 +58,6 @@ public function save_import_workhour(Request $request)
         'break_time.*' => 'nullable|integer|min:0', // Validate break time in minutes
     ]);
 
-    dd($request->all());
 
     $overworkedEntries = [];
 
