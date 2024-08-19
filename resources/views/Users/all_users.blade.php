@@ -5,8 +5,6 @@
     <nav class="page-breadcrumb">
         <ol class="breadcrumb">
             <a href="{{route('add.user')}}" class="btn btn-inverse-info">Add User</a>
-            &nbsp;&nbsp;&nbsp;&nbsp;
-            <a href="{{route('export.user')}}" class="btn btn-success">Export Users</a>
         </ol>
     </nav>
 

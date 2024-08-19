@@ -3,9 +3,9 @@
 namespace App\Imports;
 
 use App\Models\Workhour;
+use Illuminate\Support\Facades\DB;
 use PhpOffice\PhpSpreadsheet\Shared\Date as ExcelDate;
 use Maatwebsite\Excel\Concerns\ToModel;
-use Illuminate\Support\Facades\DB;
 
 class WorkhourImport implements ToModel
 {
@@ -44,59 +44,7 @@ class WorkhourImport implements ToModel
         $hoursWorked = intdiv($totalMinutesWorked, 60);
         $minutesWorked = $totalMinutesWorked % 60;
 
-        // Fetch existing work hours for the same employee and date
-        $existingWorkhour = Workhour::where('employee_id', $employeeId)
-            ->whereDate('work_date', $workDate)
-            ->first();
-
-        if ($existingWorkhour) {
-            // Add the new hours to the existing ones
-            $existingWorkhour->daily_workhours = $this->addTime($existingWorkhour->daily_workhours, $hoursWorked, $minutesWorked);
-
-            // Recalculate overtime and total amount based on updated hours
-            $this->updateWorkhour($existingWorkhour, $rate);
-
-            // Save the updated work hour entry
-            $existingWorkhour->save();
-
-            return $existingWorkhour;
-        } else {
-            // Store the new work hours in the database
-            return new Workhour([
-                'employee_id' => $employeeId,
-                'client_id' => $clientId,
-                'labour_id' => $labourId,
-                'work_date' => $workDate,
-                'start_time' => $checkInTime,
-                'end_time' => $checkOutTime,
-                'daily_workhours' => sprintf('%02d:%02d', $hoursWorked, $minutesWorked),
-                'daily_overtime' => $this->calculateOvertime($hoursWorked, $minutesWorked),
-                'overtime' => ($hoursWorked > 8) ? 1 : 0,
-                'weekly_workhours' => $this->calculateWeeklyWorkhours($employeeId, $hoursWorked, $minutesWorked),
-                'weekly_overtime' => $this->calculateWeeklyOvertime($employeeId),
-                'break_time' => $breakTimeMinutes, // Store break time in minutes
-                'rate' => $rate,
-                'total_amount' => $this->calculateTotalAmount($hoursWorked, $rate),
-            ]);
-        }
-    }
-
-    private function addTime($existingTime, $hoursToAdd, $minutesToAdd)
-    {
-        list($existingHours, $existingMinutes) = explode(':', $existingTime);
-
-        $totalMinutes = ($existingHours * 60 + $existingMinutes) + ($hoursToAdd * 60 + $minutesToAdd);
-
-        return sprintf('%02d:%02d', intdiv($totalMinutes, 60), $totalMinutes % 60);
-    }
-
-    private function updateWorkhour($workhour, $rate)
-    {
-        // Recalculate overtime and total amount
-        $hoursWorked = $this->getHoursFromTime($workhour->daily_workhours);
-        $minutesWorked = $this->getMinutesFromTime($workhour->daily_workhours);
-
-        // Recalculate daily overtime
+        // Determine if overtime is applicable
         $dailyOvertimeHours = 0;
         $dailyOvertimeMinutes = 0;
         if ($hoursWorked > 8) {
@@ -105,75 +53,45 @@ class WorkhourImport implements ToModel
             $dailyOvertimeMinutes = $dailyOvertimeMinutes % 60;
         }
 
-        // Update the workhour record
-        $workhour->daily_overtime = sprintf('%02d:%02d', $dailyOvertimeHours, $dailyOvertimeMinutes);
-        $workhour->overtime = ($dailyOvertimeHours > 0 || $dailyOvertimeMinutes > 0) ? 1 : 0;
-
-        // Recalculate weekly work hours
-        $workhour->weekly_workhours = $this->calculateWeeklyWorkhours($workhour->employee_id, $hoursWorked, $minutesWorked);
-
-        // Recalculate weekly overtime
-        $workhour->weekly_overtime = $this->calculateWeeklyOvertime($workhour->employee_id);
-
-        // Recalculate total amount
-        $workhour->total_amount = $this->calculateTotalAmount($hoursWorked, $rate);
-    }
-
-    private function calculateWeeklyWorkhours($employeeId, $hoursWorked, $minutesWorked)
-    {
+        // Fetch the existing weekly work hours
         $existingWeeklyWorkhours = Workhour::where('employee_id', $employeeId)
             ->whereBetween('work_date', [now()->startOfWeek(), now()->endOfWeek()])
             ->sum(DB::raw("TIME_TO_SEC(daily_workhours)")) / 3600;
 
-        return $existingWeeklyWorkhours + ($hoursWorked + $minutesWorked / 60);
-    }
+        // Add the current day's work hours to the existing weekly work hours
+        $totalWeeklyWorkhours = $existingWeeklyWorkhours + ($hoursWorked + $minutesWorked / 60);
 
-    private function calculateWeeklyOvertime($employeeId)
-    {
-        $totalWeeklyWorkhours = $this->calculateWeeklyWorkhours($employeeId, 0, 0); // Get total weekly work hours without adding current
+        // Calculate weekly overtime if weekly work hours exceed 40
         $weeklyOvertimeSeconds = 0;
-
         if ($totalWeeklyWorkhours > 40) {
             $weeklyOvertimeSeconds = ($totalWeeklyWorkhours - 40) * 3600;
         }
 
-        return gmdate('H:i:s', $weeklyOvertimeSeconds);
-    }
-
-    private function calculateOvertime($hoursWorked, $minutesWorked)
-    {
+        // Calculate total amount
         if ($hoursWorked > 8) {
-            $overtimeMinutes = ($hoursWorked - 8) * 60 + $minutesWorked;
-            $overtimeHours = intdiv($overtimeMinutes, 60);
-            $overtimeMinutes = $overtimeMinutes % 60;
-            return sprintf('%02d:%02d', $overtimeHours, $overtimeMinutes);
-        }
-
-        return '00:00';
-    }
-
-    private function calculateTotalAmount($hoursWorked, $rate)
-    {
-        if ($hoursWorked > 8) {
-            $dailyOvertimeHours = $hoursWorked - 8;
-            return 8 * $rate + 1.5 * $rate * $dailyOvertimeHours;
+            $totalAmount = 8 * $rate + 1.5 * $rate * $dailyOvertimeHours;
         } else {
-            return $hoursWorked * $rate;
+            $totalAmount = $hoursWorked * $rate;
         }
-    }
 
-    private function getHoursFromTime($time)
-    {
-        list($hours,) = explode(':', $time);
-        return (int)$hours;
+        // Store the work hours in the database
+        return new Workhour([
+            'employee_id' => $employeeId,
+            'client_id' => $clientId,
+            'labour_id' => $labourId,
+            'work_date' => $workDate,
+            'start_time' => $checkInTime,
+            'end_time' => $checkOutTime,
+            'daily_workhours' => sprintf('%02d:%02d', $hoursWorked, $minutesWorked),
+            'daily_overtime' => sprintf('%02d:%02d', $dailyOvertimeHours, $dailyOvertimeMinutes),
+            'overtime' => ($dailyOvertimeHours > 0 || $dailyOvertimeMinutes > 0) ? 1 : 0,
+            'weekly_workhours' => $totalWeeklyWorkhours, // Store as DECIMAL
+            'weekly_overtime' => gmdate('H:i:s', $weeklyOvertimeSeconds), // Store weekly overtime as TIME with seconds
+            'break_time' => $breakTimeMinutes, // Store break time in minutes
+            'rate' => $rate,
+            'total_amount' => $totalAmount,
+        ]);
     }
-
-    private function getMinutesFromTime($time)
-    {
-        list(, $minutes) = explode(':', $time);
-        return (int)$minutes;
-    }
-
 
     private function transformDate($value)
     {

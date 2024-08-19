@@ -49,14 +49,9 @@
                                 <div class="row">
                                     <div class="col-6 col-md-12 col-xl-5">
                                         <h3 class="mb-2">
-                                            {{ $sumOfAmount }}
+                                           CA $ {{ $sumOfAmount }}
                                         </h3>
-                                        <div class="d-flex align-items-baseline">
-                                            <p class="text-success">
-                                                <span>+3.3%</span>
-                                                <i data-feather="arrow-up" class="icon-sm mb-1"></i>
-                                            </p>
-                                        </div>
+
                                     </div>
                                     <div class="col-6 col-md-12 col-xl-7">
                                         <div id="customersChart" class="mt-md-3 mt-xl-0"></div>
@@ -97,12 +92,7 @@
                                 <div class="row">
                                     <div class="col-6 col-md-12 col-xl-5">
                                         <h3 class="mb-2">{{$pendingInvoicesCount}}</h3>
-                                        <div class="d-flex align-items-baseline">
-                                            <p class="text-danger">
-                                                <span>-2.8%</span>
-                                                <i data-feather="arrow-down" class="icon-sm mb-1"></i>
-                                            </p>
-                                        </div>
+                                    
                                     </div>
                                     <div class="col-6 col-md-12 col-xl-7">
                                         <div id="ordersChart" class="mt-md-3 mt-xl-0"></div>
