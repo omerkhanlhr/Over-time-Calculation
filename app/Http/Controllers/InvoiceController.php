@@ -469,6 +469,12 @@ class InvoiceController extends Controller
         return view('invoices.breakdown_invoices.all_pdfs', compact('invoice', 'groupedBreakdowns'));
     }
 
+    public function Allpayments()
+    {
+        $payments = Payment::with(['invoice.client'])->get();
+        return view('payments.all_payments', compact('payments'));
+    }
+
     public function payment_invoice($id)
     {
         $invoice = Invoice::findOrFail($id);

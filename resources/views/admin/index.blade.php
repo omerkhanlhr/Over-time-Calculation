@@ -111,7 +111,7 @@
                             </div>
                         </div>
                     </div>
-                    
+
                 </div>
             </div>
         </div> <!-- row -->
@@ -157,16 +157,27 @@
             <th>Invoice ID</th>
             <th>Client Name</th>
             <th>Total Amount</th>
+            <th>Amount Due</th>
             <th>Status</th>
             <th>PDF</th>
           </tr>
         </thead>
         <tbody>
             @foreach ($invoices as $invoice)
+            @php
+            $lateFee = 0;
+
+            if (\Carbon\Carbon::now()->gt(\Carbon\Carbon::parse($invoice->due_date))) {
+                $lateFee = $invoice->grand_total * 0.02; // 2% late fee
+            }
+
+            $finalTotal = $invoice->grand_total + $lateFee;
+        @endphp
     <tr>
         <td>{{ $invoice->id }}</td>
         <td>{{ $invoice->client->name }}</td>
         <td>{{ $invoice->grand_total }}</td>
+        <td>{{ $finalTotal }}</td>
         <td>
         @if ($invoice->status==0)
         <span class="badge bg-warning">Pending</span>
@@ -176,6 +187,8 @@
         <a href="{{ route('invoice.pdfs', $invoice->id) }}" class="btn btn-info">View PDF's</a>
         &nbsp;&nbsp;&nbsp;
         <a href="{{ route('payment.invoice', $invoice->id) }}" class="btn btn-success">Payment</a>
+        &nbsp;&nbsp;&nbsp;
+        <a href="{{route('invoices.edit',$invoice->id)}}" class="btn btn-inverse-warning"><i class="fa fa-edit" style="font-size:24px;color:yellow"></i></a>
     </td>
 
 

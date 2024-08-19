@@ -148,6 +148,24 @@
             </ul>
           </div>
         </li>
+        <li class="nav-item nav-category">Payments</li>
+        <li class="nav-item">
+          <a class="nav-link" data-bs-toggle="collapse" href="#payments" role="button" aria-expanded="false" aria-controls="emails">
+            <i class="link-icon" data-feather="box"></i>
+            <span class="link-title">Payments</span>
+            <i class="link-arrow" data-feather="chevron-down"></i>
+          </a>
+          <div class="collapse" id="payments">
+            <ul class="nav sub-menu">
+              {{-- @if(Auth::user()->can('site.settings')) --}}
+                      <li class="nav-item">
+                <a href="{{ route('all.payments') }}" class="nav-link">All Payments</a>
+              </li>
+
+
+            </ul>
+          </div>
+        </li>
 
       </ul>
     </div>
