@@ -97,7 +97,7 @@
         <div class="header">
             <div class="company-details">
                 <img src="{{ $base64 }}" alt="Logo">
-                <h4 style="margin-top:-5px">Theta Smart Corporate Solutions</h4>
+                <h6 style="margin-top:-5px">Theta Smart Corporate Solutions</h6>
                 <p style="margin-top:-20px">26920 29th Ave Aldergrove V4W3C1 Canada</p>
             </div>
             @php
@@ -111,7 +111,7 @@
             @endphp
             <div class="invoice-details">
                 <h3 style="text-align: right;">INVOICE</h3>
-                <p style="text-align: right;">{{ $invoice->id }}</p>
+                <p style="text-align: right;">{{ $invoice->customer_prefix }}  {{ $invoice->id }}</p>
                 <p style="text-align: right;">Date: {{ \Carbon\Carbon::now()->format('M d, Y') }}</p>
                 <p style="text-align: right;">Payment Terms:
                     {{ \Carbon\Carbon::parse($invoice->from_date)->format('M d Y') }} -

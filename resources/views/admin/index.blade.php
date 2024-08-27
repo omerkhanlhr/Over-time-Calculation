@@ -92,7 +92,7 @@
                                 <div class="row">
                                     <div class="col-6 col-md-12 col-xl-5">
                                         <h3 class="mb-2">{{$pendingInvoicesCount}}</h3>
-                                    
+
                                     </div>
                                     <div class="col-6 col-md-12 col-xl-7">
                                         <div id="ordersChart" class="mt-md-3 mt-xl-0"></div>
@@ -176,7 +176,7 @@
     <td>
         <a href="{{ route('invoice.pdfs', $invoice->id) }}" class="btn btn-info">View PDF's</a>
         &nbsp;&nbsp;&nbsp;
-        <a href="{{ route('payment.invoice', $invoice->id) }}" class="btn btn-success">Payment</a>
+        <a href="{{ route('get.payment', $invoice->id) }}" class="btn btn-success">Payment</a>
         &nbsp;&nbsp;&nbsp;
         <a href="{{route('invoices.edit',$invoice->id)}}" class="btn btn-inverse-warning"><i class="fa fa-edit" style="font-size:24px;color:yellow"></i></a>
     </td>

@@ -21,115 +21,116 @@ class InvoiceController extends Controller
     }
 
     public function createInvoice(Request $request)
-{
-    $request->validate([
-        'client_id' => 'required',
-        'from_date' => 'required|date',
-        'to_date' => 'required|date',
-        'due_date' => 'required|date',
-        'tax' => 'nullable|numeric'
-    ]);
-
-    $workhours = Workhour::where('client_id', $request->client_id)
-        ->whereBetween('work_date', [$request->from_date, $request->to_date])
-        ->with('labour')
-        ->get();
-
-    if ($workhours->isEmpty()) {
-        return redirect()->back()->with('error', 'No work hours found for the selected dates.');
-    }
-
-    // Initialize totals
-    $totalAmount = 0;
-    $overtimeAmount = 0;
-    $totalEmployees = 0;
-    $tax = $request->tax;
-
-    // Helper function to convert time to decimal hours
-    function timeToHours($time)
     {
-        list($hours, $minutes, $seconds) = explode(':', $time);
-        return $hours + ($minutes / 60) + ($seconds / 3600);
-    }
+        $request->validate([
+            'client_id' => 'required',
+            'from_date' => 'required|date',
+            'to_date' => 'required|date',
+            'due_date' => 'required|date',
+            'tax' => 'nullable|numeric'
+        ]);
 
-    // Group work hours by labor type and date
-    $laborTypeDateGroups = $workhours->groupBy(function ($workhour) {
-        return $workhour->labour_id . '_' . $workhour->work_date;
-    });
+        $workhours = Workhour::where('client_id', $request->client_id)
+            ->whereBetween('work_date', [$request->from_date, $request->to_date])
+            ->with('labour')
+            ->get();
 
-    $invoiceBreakdowns = [];
-
-    foreach ($laborTypeDateGroups as $key => $groupedWorkhours) {
-        list($labor_id, $work_date) = explode('_', $key);
-
-        $hoursWorked = $groupedWorkhours->sum(function ($workhour) {
-            return timeToHours($workhour->daily_workhours);
-        });
-
-        $overtime = $groupedWorkhours->sum(function ($workhour) {
-            return timeToHours($workhour->daily_overtime);
-        });
-
-        $rate = $request->input("labor_types.$labor_id");
-
-        if ($hoursWorked > 8) {
-            $hoursWorked = 8; // Store 8 hours in the hours_worked column
-            $subtotal = 8 * $rate;
-            $overtimeAmount = 1.5 * $overtime * $rate;
-            $totalBreakdownAmount = $subtotal + $overtimeAmount;
-        } else {
-            $subtotal = $hoursWorked * $rate;
-            $totalBreakdownAmount = $subtotal;
+        if ($workhours->isEmpty()) {
+            return redirect()->back()->with('error', 'No work hours found for the selected dates.');
         }
 
-        $totalEmployees = $groupedWorkhours->groupBy('employee_id')->count();
+        // Initialize totals
+        $totalAmount = 0;
+        $overtimeAmount = 0;
+        $totalEmployees = 0;
+        $tax = $request->tax;
 
-        // Add the breakdown amount to the total invoice amount
-        $totalAmount += $totalBreakdownAmount;
+        // Helper function to convert time to decimal hours
+        function timeToHours($time)
+        {
+            list($hours, $minutes, $seconds) = explode(':', $time);
+            return $hours + ($minutes / 60) + ($seconds / 3600);
+        }
 
-        $invoiceBreakdowns[] = [
-            'labor_type_id' => $labor_id,
-            'work_date' => $work_date,
-            'hours_worked' => $hoursWorked, // Storing the adjusted hours worked
-            'overtime_work' => $overtime,
-            'rate' => $rate,
-            'overtime_amount' => $overtimeAmount,
-            'subtotal' => $subtotal,
-            'total_amount' => $totalBreakdownAmount,
+        // Group work hours by labor type and date
+        $laborTypeDateGroups = $workhours->groupBy(function ($workhour) {
+            return $workhour->labour_id . '_' . $workhour->work_date;
+        });
+
+        $invoiceBreakdowns = [];
+
+        foreach ($laborTypeDateGroups as $key => $groupedWorkhours) {
+            list($labor_id, $work_date) = explode('_', $key);
+
+            $hoursWorked = $groupedWorkhours->sum(function ($workhour) {
+                return timeToHours($workhour->daily_workhours);
+            });
+
+            $overtime = $groupedWorkhours->sum(function ($workhour) {
+                return timeToHours($workhour->daily_overtime);
+            });
+
+            $rate = $request->input("labor_types.$labor_id");
+
+            if ($hoursWorked > 8) {
+                $hoursWorked = 8; // Store 8 hours in the hours_worked column
+                $subtotal = 8 * $rate;
+                $overtimeAmount = 1.5 * $overtime * $rate;
+                $totalBreakdownAmount = $subtotal + $overtimeAmount;
+            } else {
+                $subtotal = $hoursWorked * $rate;
+                $totalBreakdownAmount = $subtotal;
+            }
+
+            $totalEmployees = $groupedWorkhours->groupBy('employee_id')->count();
+
+            // Add the breakdown amount to the total invoice amount
+            $totalAmount += $totalBreakdownAmount;
+
+            $invoiceBreakdowns[] = [
+                'labor_type_id' => $labor_id,
+                'work_date' => $work_date,
+                'hours_worked' => $hoursWorked, // Storing the adjusted hours worked
+                'overtime_work' => $overtime,
+                'rate' => $rate,
+                'overtime_amount' => $overtimeAmount,
+                'subtotal' => $subtotal,
+                'total_amount' => $totalBreakdownAmount,
+                'total_employees' => $totalEmployees,
+            ];
+        }
+
+        // Calculate the grand total with tax
+        $grandTotal = $totalAmount + ($totalAmount * ($tax / 100));
+
+        // Create the invoice with the total amount being the sum of the breakdowns
+        $invoice = Invoice::create([
+            'client_id' => $request->client_id,
+            'from_date' => $request->from_date,
+            'to_date' => $request->to_date,
+            'due_date' => $request->due_date,
+            'status' => 0,
+            'total_amount' => $totalAmount,
+            'customer_prefix' => $request->prefix,
+            'tax' => $tax,
+            'remarks' => $request->remarks,
             'total_employees' => $totalEmployees,
-        ];
+            'grand_total' => $grandTotal
+        ]);
+
+        // Save the breakdowns
+        foreach ($invoiceBreakdowns as &$breakdown) {
+            $breakdown['invoice_id'] = $invoice->id;
+        }
+
+        InvoiceBreakdown::insert($invoiceBreakdowns);
+
+        $notification = array(
+            'message' => 'Invoice Added Successfully',
+            'alert-type' => 'success',
+        );
+        return redirect()->route('invoices.show')->with($notification);
     }
-
-    // Calculate the grand total with tax
-    $grandTotal = $totalAmount + ($totalAmount * ($tax / 100));
-
-    // Create the invoice with the total amount being the sum of the breakdowns
-    $invoice = Invoice::create([
-        'client_id' => $request->client_id,
-        'from_date' => $request->from_date,
-        'to_date' => $request->to_date,
-        'due_date' => $request->due_date,
-        'status' => 0,
-        'total_amount' => $totalAmount,  // Sum of all breakdowns
-        'tax' => $tax,
-        'remarks' => $request->remarks,
-        'total_employees' => $totalEmployees,
-        'grand_total' => $grandTotal
-    ]);
-
-    // Save the breakdowns
-    foreach ($invoiceBreakdowns as &$breakdown) {
-        $breakdown['invoice_id'] = $invoice->id;
-    }
-
-    InvoiceBreakdown::insert($invoiceBreakdowns);
-
-    $notification = array(
-        'message' => 'Invoice Added Successfully',
-        'alert-type' => 'success',
-    );
-    return redirect()->route('invoices.show')->with($notification);
-}
 
 
 
@@ -210,8 +211,7 @@ class InvoiceController extends Controller
     public function previewPdf($id)
     {
         $invoice = Invoice::with('invoiceBreakdowns.labour')->findOrFail($id);
-
-            $breakdowns = $invoice->invoiceBreakdowns;
+        $breakdowns = $invoice->invoiceBreakdowns;
 
         // Group the breakdowns by date and labor type
         $groupedBreakdowns = $breakdowns->groupBy(function ($breakdown) {
@@ -220,6 +220,9 @@ class InvoiceController extends Controller
             $dateAndType = explode('_', $key);
             $workDate = $dateAndType[0];
             $laborType = $dateAndType[1];
+
+            // Generate the initials from the labor type name
+            $laborTypeInitials = $this->generateInitials($laborType);
 
             $totalHours = $items->sum('hours_worked');
             $totalOvertime = $items->sum('overtime_work'); // Assuming this field exists
@@ -235,7 +238,7 @@ class InvoiceController extends Controller
                 'employee_count' => $items->unique('employee_id')->count(),
                 'total_amount' => $totalAmount,
                 'total_overtime_amount' => $totalOvertimeAmount,
-                'labor_type' => $laborType,
+                'labor_type' => $laborTypeInitials, // Display initials instead of full labor type name
                 'work_date' => $workDate,
             ];
         });
@@ -252,11 +255,14 @@ class InvoiceController extends Controller
         return $pdf->stream('invoice_' . $id);
     }
 
+
+
+
     public function downloadPdf($id)
     {
         $invoice = Invoice::with('invoiceBreakdowns.labour')->findOrFail($id);
 
-            $breakdowns = $invoice->invoiceBreakdowns;
+        $breakdowns = $invoice->invoiceBreakdowns;
 
         // Group the breakdowns by date and labor type
         $groupedBreakdowns = $breakdowns->groupBy(function ($breakdown) {
@@ -265,6 +271,8 @@ class InvoiceController extends Controller
             $dateAndType = explode('_', $key);
             $workDate = $dateAndType[0];
             $laborType = $dateAndType[1];
+
+            $laborTypeInitials = $this->generateInitials($laborType);
 
             $totalHours = $items->sum('hours_worked');
             $totalOvertime = $items->sum('overtime_work'); // Assuming this field exists
@@ -280,7 +288,7 @@ class InvoiceController extends Controller
                 'employee_count' => $items->unique('employee_id')->count(),
                 'total_amount' => $totalAmount,
                 'total_overtime_amount' => $totalOvertimeAmount,
-                'labor_type' => $laborType,
+                'labor_type' => $laborTypeInitials,
                 'work_date' => $workDate,
             ];
         });
@@ -294,23 +302,20 @@ class InvoiceController extends Controller
         $pdfView = 'invoices.invoice_pdf';
         $pdf = PDF::loadView($pdfView, compact('invoice', 'groupedBreakdowns', 'breakdowns', 'base64'));
 
-        return $pdf->download('invoice_' . $id.'.pdf');
+        return $pdf->download('invoice_' . $id . '.pdf');
     }
 
     public function delete_invoice($id)
     {
         $invoice = Invoice::findOrFail($id);
-        if($invoice)
-        {
+        if ($invoice) {
             $invoice->delete();
             $notification = array(
-                'message' => 'Employee Deleted Successfully',
+                'message' => 'Invoice Deleted Successfully',
                 'alert-type' => 'success',
             );
             return redirect()->back()->with($notification);
-        }
-        else
-        {
+        } else {
             $notification = array(
                 'message' => 'Something went wrong',
                 'alert-type' => 'error',
@@ -329,6 +334,7 @@ class InvoiceController extends Controller
             $query->where('name', $laborType);
         })->get();
 
+
         // Group the breakdowns by date and calculate totals
         $groupedBreakdowns = $breakdowns->groupBy('work_date')->map(function ($items, $date) {
             $totalHours = $items->sum('hours_worked');
@@ -338,6 +344,7 @@ class InvoiceController extends Controller
             $totalAmount = $items->sum('total_amount');
             $totalOvertimeAmount = $items->where('overtime_work', '>', 0)->sum('overtime_amount'); // Assuming this field exists
 
+            $laborTypeInitials = $this->generateInitials($items->first()->labour->name);
             return [
                 'items' => $items,
                 'rate' => $rate,
@@ -347,7 +354,7 @@ class InvoiceController extends Controller
                 'subtotal' => $subtotal,
                 'total_amount' => $totalAmount,
                 'total_overtime_amount' => $totalOvertimeAmount,
-                'labor_type' => $items->first()->labour->name // Fetch the labor type name
+                'labor_type' => $laborTypeInitials // Fetch the labor type name
             ];
         });
 
@@ -382,6 +389,7 @@ class InvoiceController extends Controller
             $totalAmount = $items->sum('total_amount');
             $totalOvertimeAmount = $items->where('overtime_work', '>', 0)->sum('overtime_amount'); // Assuming this field exists
 
+            $laborTypeInitials = $this->generateInitials($items->first()->labour->name);
             return [
                 'items' => $items,
                 'rate' => $rate,
@@ -391,7 +399,7 @@ class InvoiceController extends Controller
                 'subtotal' => $subtotal,
                 'total_amount' => $totalAmount,
                 'total_overtime_amount' => $totalOvertimeAmount,
-                'labor_type' => $items->first()->labour->name // Fetch the labor type name
+                'labor_type' => $laborTypeInitials // Fetch the labor type name
             ];
         });
 
@@ -403,7 +411,22 @@ class InvoiceController extends Controller
 
         $pdf = PDF::loadView('invoices.breakdown_invoices.breakdown_pdf', compact('invoice', 'groupedBreakdowns', 'base64', 'breakdowns'));
 
-        return $pdf->download('invoice ' . $invoiceId .' '. $laborType . '.pdf');
+        return $pdf->download('invoice ' . $invoiceId . ' ' . $laborType . '.pdf');
+    }
+
+    // Helper function to generate initials from labor type name
+    private function generateInitials($laborTypeName)
+    {
+        $words = explode(' ', $laborTypeName);
+        $initials = '';
+
+        foreach ($words as $word) {
+            if (strlen($word) > 0) {
+                $initials .= strtoupper($word[0]);
+            }
+        }
+
+        return $initials;
     }
 
     public function edit($id)
@@ -475,58 +498,53 @@ class InvoiceController extends Controller
         return view('payments.all_payments', compact('payments'));
     }
 
-    public function payment_invoice($id)
+    public function getpayment($id)
     {
         $invoice = Invoice::findOrFail($id);
 
-        $lateFee = 0;
+        return view('payments.getpayment', compact('invoice'));
+    }
 
-        if ($invoice->status == 0 && \Carbon\Carbon::now()->gt(\Carbon\Carbon::parse($invoice->due_date)))
-        {
-            $lateFee = $invoice->grand_total * 0.02; // 2% late fee
-        }
-
-        $finalTotal = $invoice->grand_total + $lateFee;
+    public function payment_invoice(Request $request, $id)
+    {
+        $invoice = Invoice::findOrFail($id);
 
         $payment = new Payment();
 
         $payment->invoice_id = $invoice->id;
 
-        $payment->amount = $finalTotal;
+        $payment->amount = $request->amount;
 
         $payment->payment_date = date('Y-m-d');
 
-       $check = $payment->save();
+        $check = $payment->save();
 
-       if($check)
-       {
-        $invoice->status=1;
+        if ($check) {
+            $invoice->status = 1;
 
-        $invoice->save();
+            $invoice->save();
 
-        $notification = array(
-            'message' => 'Payment Added Successfully',
-            'alert-type' => 'success',
-        );
-        return redirect()->back()->with($notification);
-       }
-       else
-       {
+            $notification = array(
+                'message' => 'Payment Added Successfully',
+                'alert-type' => 'success',
+            );
+            return redirect()->route('admin.dashboard')->with($notification);
+        } else {
 
-        $notification = array(
-            'message' => 'Something Went Wrong',
-            'alert-type' => 'error',
-        );
-        return redirect()->back()->with($notification);
-       }
+            $notification = array(
+                'message' => 'Something Went Wrong',
+                'alert-type' => 'error',
+            );
+            return redirect()->back()->with($notification);
+        }
     }
 
     public function show_invoice($id)
     {
         $invoice = Invoice::with(['client'])->findOrFail($id);
 
-        $payments = Payment::where('invoice_id',$id)->get();
+        $payments = Payment::where('invoice_id', $id)->get();
 
-        return view('invoices.single_invoice', ['invoice' => $invoice , 'payments' => $payments]);
+        return view('invoices.single_invoice', ['invoice' => $invoice, 'payments' => $payments]);
     }
 }

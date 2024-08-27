@@ -53,6 +53,19 @@
                             </select>
                         </div>
 
+                        <div class="form-group mb-3">
+                            <label for="name" class="form-label">Customer Prefix</label>
+                            <input type="text"
+                                class="form-control"
+                                name="prefix" id="prefix" value="{{ $invoice->customer_prefix }}">
+                                <span class="text-danger">
+                                    @error('prefix')
+                                        {{$message}}
+                                    @enderror
+                                </span>
+
+                        </div>
+
 
                         <div class="form-group mb-3">
                             <label for="rate">GST Tax</label>
