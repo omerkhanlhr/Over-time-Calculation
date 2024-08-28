@@ -34,7 +34,7 @@
 	<link rel="stylesheet" href="{{ asset('backend/assets/css/demo2/style.css')}}">
   <!-- End layout styles -->
 
-  <link rel="shortcut icon" href="{{ asset('backend/assets/images/favicon.png')}}" />
+  <link rel="shortcut icon" href="{{ asset('images/logo.png')}}" />
   <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.css" >
 
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>

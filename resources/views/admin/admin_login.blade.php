@@ -39,7 +39,7 @@
 	<link rel="stylesheet" href="{{asset('backend/assets/css/demo2/style.css')}}">
   <!-- End layout styles -->
 
-  <link rel="shortcut icon" href="{{asset('backend/assets/images/favicon.png')}}" />
+  <link rel="shortcut icon" href="{{asset('images/logo.png')}}" />
 </head>
 <body>
 	<div class="main-wrapper">
@@ -57,7 +57,7 @@
                 </div>
                 <div class="col-md-8 ps-md-0">
                   <div class="auth-form-wrapper px-4 py-5">
-                    <a href="{{route('admin.login')}}" class="noble-ui-logo logo-light d-block mb-2">Noble<span>UI</span></a>
+                    <a href="{{route('admin.login')}}" class="noble-ui-logo logo-light d-block mb-2">Theta<span>Smart</span></a>
                     <h5 class="text-muted fw-normal mb-4">Welcome back! Log in to your account.</h5>
                     <form method="POST" action="{{ route('login') }}">
                         @csrf
@@ -80,7 +80,7 @@
                           Login
                         </button>
                       </div>
-                      <a href="register.html" class="d-block mt-3 text-muted">Not a user? Sign up</a>
+                      <a href="{{route('password.request')}}" class="d-block mt-3 text-muted">Forgot Password?</a>
                     </form>
                   </div>
                 </div>

@@ -164,7 +164,7 @@
             $finalTotal = $invoice->grand_total + $lateFee;
         @endphp
     <tr>
-        <td>{{ $invoice->id }}</td>
+        <td><a href="{{route('show.invoice',$invoice->id)}}">{{ $invoice->id }}</a></td>
         <td>{{ $invoice->client->name }}</td>
         <td>{{ $invoice->grand_total }}</td>
         <td>{{ $finalTotal }}</td>

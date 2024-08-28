@@ -54,6 +54,9 @@ $lateFee = 0;
             <p>Invoice Due Date: {{$invoice->due_date}}
             </p>
             <br>
+            <p>Invoice Tax: {{$invoice->tax}}%
+            </p>
+            <br>
             <p>Total Amount: {{$invoice->total_amount}}
             </p>
             <br>
