@@ -64,14 +64,15 @@
 
         .invoice-items th,
         .invoice-items td {
-            border: 1px solid #ddd;
-            padding: 8px;
+            border: none;
+            padding: 5px;
         }
 
         .invoice-items th {
-            background-color: black;
+            background-color: rgba(0, 0, 0, 0.728);
             color: white;
             text-align: left;
+            border: none;
         }
 
         .total {
@@ -98,7 +99,7 @@
             <div class="company-details">
                 <img src="{{ $base64 }}" alt="Logo">
                 <h6 style="margin-top:-5px">Theta Smart Corporate Solutions</h6>
-                <p style="margin-top:-20px">26920 29th Ave Aldergrove V4W3C1 Canada</p>
+                <p style="margin-top:-25px; font-size:13px">26920 29th Ave Aldergrove V4W3C1 Canada</p>
             </div>
             @php
                 $lateFee = 0;
@@ -111,7 +112,7 @@
             @endphp
             <div class="invoice-details">
                 <h3 style="text-align: right;">INVOICE</h3>
-                <p style="text-align: right;">{{ $invoice->customer_prefix }}  {{ $invoice->id }}</p>
+                <p style="font-size: 18px; text-align: right;">{{ $invoice->customer_prefix }} # {{ $invoice->id }}</p>
                 <p style="text-align: right;">Date: {{ \Carbon\Carbon::now()->format('M d, Y') }}</p>
                 <p style="text-align: right;">Payment Terms:
                     {{ \Carbon\Carbon::parse($invoice->from_date)->format('M d Y') }} -
@@ -123,14 +124,13 @@
             </div>
         </div>
         <div class="client-details">
-            <p>Bill To:<strong>Fleet Optics Inc</strong></p>
+            <p>Bill To: <strong>{{ $invoice->client->company }}</strong></p>
             <p>Ship To:<strong>Fleet Optics Inc</strong></p>
         </div>
         <table class="invoice-items">
             <thead>
                 <tr>
-                    <th>Date</th>
-                    <th>Labor Type</th>
+                    <th>Item</th>
                     <th>Quantity</th>
                     <th>Rate</th>
                     <th>Amount</th>
@@ -139,19 +139,17 @@
             <tbody>
                 @foreach ($groupedBreakdowns as $data)
                     <tr>
-                            <td>{{ \Carbon\Carbon::parse($data['work_date'])->format('M d') }}</td>
-                            <td>{{ $data['employee_count'] }} {{ $data['labor_type'] }}</td>
+                            <td><strong>{{ \Carbon\Carbon::parse($data['work_date'])->format('M d') }} - ({{ $data['employee_count'] }} Personnel Provided) {{ $data['labor_type'] }}</strong> </td>
                             <td>{{ $data['total_hours'] }}</td>
-                            <td>CA${{ number_format($data['rate'], 2) }}</td>
-                            <td>CA${{ number_format($data['total_amount'], 2) }}</td>
+                            <td> CA${{ number_format($data['rate'], 2) }}</td>
+                            <td> CA${{ number_format($data['total_amount'], 2) }} </td>
                     </tr>
                 @if ($data['total_overtime'] > 0)
                     <tr>
-                        <td>{{ \Carbon\Carbon::parse($data['work_date'])->format('M d') }} - OT</td>
-                        <td>{{ $data['employee_count'] }} {{ $data['labor_type'] }}</td>
-                        <td>{{ $data['total_overtime'] }}</td>
-                        <td>CA${{ number_format($data['rate'], 2) }}</td>
-                        <td>CA${{ number_format($data['total_overtime_amount'], 2) }}</td>
+                        <td><strong>{{ \Carbon\Carbon::parse($data['work_date'])->format('M d') }}- ({{ $data['employee_count'] }} Personnel Provided) {{ $data['labor_type'] }} - OT</strong></td>
+                        <td> {{ $data['total_overtime'] }} </td>
+                        <td> CA${{ number_format($data['rate'], 2) }}</td>
+                        <td> CA${{ number_format($data['total_overtime_amount'], 2) }}</td>
                     </tr>
                 @endif
                 @endforeach

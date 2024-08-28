@@ -45,7 +45,7 @@
                 <div class="card-body">
                     <h4 class="card-title">All Payments</h4>
                     <div class="table-responsive">
-                        <table id="dataTableExample" class="table table-bordered table-hover">
+                        <table id="dataTableExample" class="table">
                             <thead>
                                 <tr>
                                     <th>Payment ID</th>

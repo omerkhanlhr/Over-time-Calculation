@@ -210,7 +210,7 @@ class InvoiceController extends Controller
     }
     public function previewPdf($id)
     {
-        $invoice = Invoice::with('invoiceBreakdowns.labour')->findOrFail($id);
+        $invoice = Invoice::with('client' ,'invoiceBreakdowns.labour')->findOrFail($id);
         $breakdowns = $invoice->invoiceBreakdowns;
 
         // Group the breakdowns by date and labor type
@@ -260,7 +260,7 @@ class InvoiceController extends Controller
 
     public function downloadPdf($id)
     {
-        $invoice = Invoice::with('invoiceBreakdowns.labour')->findOrFail($id);
+        $invoice = Invoice::with('client' , 'invoiceBreakdowns.labour')->findOrFail($id);
 
         $breakdowns = $invoice->invoiceBreakdowns;
 
@@ -327,7 +327,7 @@ class InvoiceController extends Controller
     public function previewBreakdownPdf($invoiceId, $laborType)
     {
         // Fetch the invoice with its breakdowns and associated labour data
-        $invoice = Invoice::with('invoiceBreakdowns.labour')->findOrFail($invoiceId);
+        $invoice = Invoice::with('client', 'invoiceBreakdowns.labour')->findOrFail($invoiceId);
 
         // Filter for the specific labor type
         $breakdowns = $invoice->invoiceBreakdowns()->whereHas('labour', function ($query) use ($laborType) {
@@ -373,7 +373,7 @@ class InvoiceController extends Controller
     public function downloadBreakdownPdf($invoiceId, $laborType)
     {
         // Fetch the invoice with its breakdowns and associated labour data
-        $invoice = Invoice::with('invoiceBreakdowns.labour')->findOrFail($invoiceId);
+        $invoice = Invoice::with('client' , 'invoiceBreakdowns.labour')->findOrFail($invoiceId);
 
         // Filter for the specific labor type
         $breakdowns = $invoice->invoiceBreakdowns()->whereHas('labour', function ($query) use ($laborType) {

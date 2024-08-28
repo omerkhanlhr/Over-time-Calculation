@@ -149,7 +149,7 @@
             <th>Total Amount</th>
             <th>Amount Due</th>
             <th>Status</th>
-            <th>PDF</th>
+            <th>Actions</th>
           </tr>
         </thead>
         <tbody>
