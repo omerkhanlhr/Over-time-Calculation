@@ -47,7 +47,7 @@
 
         .invoice-details p {
             text-align: right;
-            /* margin-top: 20px; */
+            margin-bottom: 15px;
         }
 
         .client-details {
