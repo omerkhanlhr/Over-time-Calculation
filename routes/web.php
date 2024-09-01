@@ -145,5 +145,13 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     });
 });
 
+Route::middleware(['auth', 'role:admin'])->group(function () {
+    Route::controller(InvoiceBreakdownController::class)->group(function () {
+        // Edit Breakdown
+Route::get('invoice/{invoiceId}/breakdown/{laborType}/edit',  'editBreakdown')->name('invoice.breakdown.edit');
+Route::post('invoice/{invoiceId}/breakdown/{laborType}/update',  'updateBreakdown')->name('invoice.breakdown.update');
+
+    });
+});
 
 require __DIR__ . '/auth.php';

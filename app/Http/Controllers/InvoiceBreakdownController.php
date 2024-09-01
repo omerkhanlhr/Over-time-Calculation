@@ -8,101 +8,71 @@ use Illuminate\Http\Request;
 
 class InvoiceBreakdownController extends Controller
 {
-    public function deleteInvoiceBreakdown($id)
-    {
-        $breakdown = InvoiceBreakdown::findOrFail($id);
+    public function editBreakdown($invoiceId, $laborType)
+{
+    // Fetch the invoice with its breakdowns and associated labour data
+    $invoice = Invoice::with(['invoiceBreakdowns.labour' => function ($query) use ($laborType) {
+        $query->where('name', $laborType);
+    }])->findOrFail($invoiceId);
 
-        $invoice = Invoice::findOrFail($breakdown->invoice_id);
+    $breakdown = $invoice->invoiceBreakdowns()->whereHas('labour', function ($query) use ($laborType) {
+        $query->where('name', $laborType);
+    })->first();
 
-        $invoice->total_amount -= $breakdown->total_amount;
+    return view('invoices.breakdown_invoices.edit_invoice_breakdown', compact('invoice', 'breakdown', 'laborType'));
+}
+public function updateBreakdown(Request $request, $invoiceId, $laborType)
+{
+    $request->validate([
+        'rate' => 'required|numeric|min:0',
+    ]);
 
-        // Recalculate the grand total
-        $invoice->grand_total = $invoice->total_amount  +  ($invoice->tax / 100);
+    // Fetch the invoice with its breakdowns and associated labour data
+    $invoice = Invoice::with('invoiceBreakdowns.labour')->findOrFail($invoiceId);
 
-        // Save the updated invoice
-        $check = $invoice->save();
+    // Initialize total amount to zero before recalculating
+    $totalAmount = 0;
 
-        if ($check) {
-            $breakdown->delete();
+    // Update the rate and recalculate the amounts for each breakdown
+    $breakdowns = $invoice->invoiceBreakdowns()->whereHas('labour', function ($query) use ($laborType) {
+        $query->where('name', $laborType);
+    })->get();
 
-            $notification = [
-                'message' => 'Invoice Breakdown Deleted Successfully',
-                'alert-type' => 'success',
-            ];
-            return redirect()->back()->with($notification);
-        } else {
-            $notification = [
-                'message' => 'Something Went Wrong',
-                'alert-type' => 'error',
-            ];
-            return redirect()->back()->with($notification);
-        }
-    }
+    foreach ($breakdowns as $breakdown) {
+        // Update the rate
+        $breakdown->rate = $request->rate;
 
-    public function editInvoiceBreakdown($id)
-    {
-        $breakdown = InvoiceBreakdown::with('labour')->findOrFail($id);
+        // Recalculate the subtotal and total_amount based on the new rate
+        $breakdown->subtotal = $breakdown->hours_worked * $request->rate;
+        $breakdown->total_amount = $breakdown->subtotal + $breakdown->overtime_amount;
 
-        return view('invoices.breakdown_invoices.edit_invoice_breakdown', compact('breakdown'));
-    }
-
-    public function updateInvoiceBreakdownRate(Request $request, $id)
-    {
-        $request->validate([
-            'rate' => 'required|numeric|min:0',
-        ]);
-
-        // Retrieve the invoice breakdown to be updated
-        $breakdown = InvoiceBreakdown::findOrFail($id);
-
-        // Get the associated invoice
-        $invoice = Invoice::findOrFail($breakdown->invoice_id);
-
-        $rate = $request->rate;
-
-        $breakdown->rate = $rate;
-
-        $hoursWorked = $breakdown->hours_worked;
-
-        $overtimeAmount = $breakdown->overtime_amount;
-
-        if ($hoursWorked > 8)
-        {
-            $overtime = $hoursWorked - 8;
-            $subtotal = 8 * $rate;
-            $overtimeAmount = 1.5 * $overtime * $rate;
-            $totalBreakdownAmount = $subtotal + $overtimeAmount;
-        }
-        else
-        {
-            $subtotal = $hoursWorked * $rate;
-            $totalBreakdownAmount = $subtotal;
-        }
-
-        // Update the breakdown's rate and recalculate the subtotal and total amount
-
-
-        $breakdown->subtotal = $subtotal;
-        $breakdown->overtime_amount = $overtimeAmount; // Assuming overtime amount is calculated differently
-        $breakdown->total_amount = $subtotal + $overtimeAmount;
-
+        // Save the updated breakdown
         $breakdown->save();
 
-        $totalAmount = InvoiceBreakdown::where('invoice_id', $invoice->id)->sum('total_amount');
-
-        // Update the invoice's total amount and grand total
-        $invoice->total_amount = $totalAmount;
-
-        $invoice->grand_total = $totalAmount + ($totalAmount * ($invoice->tax / 100));;
-
-        // Save the updated invoice
-        $invoice->save();
-
-        $notification = [
-            'message' => 'Rate Updated Successfully and Invoice Totals Recalculated',
-            'alert-type' => 'success',
-        ];
-
-        return redirect()->route('invoices.show')->with($notification);
+        // Add the updated total_amount to the invoice's total
+        $totalAmount += $breakdown->total_amount;
     }
+
+    // Update the invoice's total_amount and grand_total based on recalculations
+    $invoice->total_amount = $totalAmount;
+    $tax = $invoice->tax;
+    $invoice->grand_total = $invoice->total_amount + ($invoice->total_amount * ($tax / 100));  // Assuming 'tax' is a fixed amount or percentage
+    $invoice->save();
+
+    $notification = [
+        'message' => 'Invoice Updated Successfully',
+        'alert-type' => 'success',
+    ];
+
+    return redirect()->route('invoice.pdfs', $invoiceId)->with($notification);
+}
+
+
+
+
+
+
+
+
+
 }

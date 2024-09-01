@@ -34,10 +34,11 @@
                                         <td>
                                             <a href="{{ route('invoice.breakdown.preview.pdf', ['invoiceId' => $invoice->id, 'laborType' => $laborType]) }}"
                                                 class="btn btn-primary" target="_blank">View PDF</a>
-                                           &nbsp;&nbsp;
-                                                <a href="{{ route('invoice.breakdown.download.pdf', ['invoiceId' => $invoice->id, 'laborType' => $laborType]) }}"
-                                                class="btn btn-info" target="_blank">Download PDF</a>
+                                            &nbsp;&nbsp;
+                                            <a href="{{ route('invoice.breakdown.edit', ['invoiceId' => $invoice->id, 'laborType' => $laborType]) }}"
+                                                class="btn btn-warning">Edit</a>
                                         </td>
+
 
                                     </tr>
                                 @endforeach

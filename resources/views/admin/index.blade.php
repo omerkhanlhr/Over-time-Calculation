@@ -19,10 +19,7 @@
                                 <div class="d-flex justify-content-between align-items-baseline">
                                     <h6 class="card-title mb-0">Total Amount</h6>
                                     <div class="dropdown mb-2">
-                                        <a type="button" id="dropdownMenuButton" data-bs-toggle="dropdown"
-                                            aria-haspopup="true" aria-expanded="false">
-                                            <i class="icon-lg text-muted pb-3px" data-feather="more-horizontal"></i>
-                                        </a>
+
                                         <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
                                             <a class="dropdown-item d-flex align-items-center" href="javascript:;"><i
                                                     data-feather="eye" class="icon-sm me-2"></i> <span
@@ -66,10 +63,7 @@
                                 <div class="d-flex justify-content-between align-items-baseline">
                                     <h6 class="card-title mb-0">Pending Invoices</h6>
                                     <div class="dropdown mb-2">
-                                        <a type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown"
-                                            aria-haspopup="true" aria-expanded="false">
-                                            <i class="icon-lg text-muted pb-3px" data-feather="more-horizontal"></i>
-                                        </a>
+                                        
                                         <div class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
                                             <a class="dropdown-item d-flex align-items-center" href="javascript:;"><i
                                                     data-feather="eye" class="icon-sm me-2"></i> <span
