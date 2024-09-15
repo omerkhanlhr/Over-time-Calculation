@@ -21,116 +21,159 @@ class InvoiceController extends Controller
     }
 
     public function createInvoice(Request $request)
+{
+    $request->validate([
+        'client_id' => 'required',
+        'from_date' => 'required|date',
+        'to_date' => 'required|date',
+        'due_date' => 'required|date',
+        'tax' => 'nullable|numeric'
+    ]);
+
+    $workhours = Workhour::where('client_id', $request->client_id)
+        ->whereBetween('work_date', [$request->from_date, $request->to_date])
+        ->with('labour')
+        ->get();
+
+    if ($workhours->isEmpty()) {
+        return redirect()->back()->with('error', 'No work hours found for the selected dates.');
+    }
+
+    // Initialize totals
+    $totalAmount = 0;
+    $totalEmployees = 0;
+    $totalOvertimeEmployees = 0;  // Total count of overtime employees across all days
+    $tax = $request->tax;
+
+    // Helper function to convert time to decimal hours
+    function timeToHours($time)
     {
-        $request->validate([
-            'client_id' => 'required',
-            'from_date' => 'required|date',
-            'to_date' => 'required|date',
-            'due_date' => 'required|date',
-            'tax' => 'nullable|numeric'
-        ]);
+        list($hours, $minutes, $seconds) = explode(':', $time);
+        return $hours + ($minutes / 60) + ($seconds / 3600);
+    }
 
-        $workhours = Workhour::where('client_id', $request->client_id)
-            ->whereBetween('work_date', [$request->from_date, $request->to_date])
-            ->with('labour')
-            ->get();
+    // Group work hours by labor type and date
+    $laborTypeDateGroups = $workhours->groupBy(function ($workhour) {
+        return $workhour->labour_id . '_' . $workhour->work_date;
+    });
 
-        if ($workhours->isEmpty()) {
-            return redirect()->back()->with('error', 'No work hours found for the selected dates.');
-        }
+    $invoiceBreakdowns = [];
 
-        // Initialize totals
-        $totalAmount = 0;
-        $overtimeAmount = 0;
-        $totalEmployees = 0;
-        $tax = $request->tax;
+    foreach ($laborTypeDateGroups as $key => $groupedWorkhours) {
+        list($labor_id, $work_date) = explode('_', $key);
 
-        // Helper function to convert time to decimal hours
-        function timeToHours($time)
-        {
-            list($hours, $minutes, $seconds) = explode(':', $time);
-            return $hours + ($minutes / 60) + ($seconds / 3600);
-        }
+        // Sum all standard hours and overtime for this labor type on the given date
+        $totalStandardHours = 0;
+        $totalOvertimeHours = 0;
 
-        // Group work hours by labor type and date
-        $laborTypeDateGroups = $workhours->groupBy(function ($workhour) {
-            return $workhour->labour_id . '_' . $workhour->work_date;
-        });
+        // Track unique employees and overtime employees
+        $employeeTracker = [];
+        $overtimeEmployeeTracker = [];
 
-        $invoiceBreakdowns = [];
+        foreach ($groupedWorkhours as $workhour) {
+            $standardHours = timeToHours($workhour->standard_hours);
+            $employeeId = $workhour->employee_id;
 
-        foreach ($laborTypeDateGroups as $key => $groupedWorkhours) {
-            list($labor_id, $work_date) = explode('_', $key);
-
-            $hoursWorked = $groupedWorkhours->sum(function ($workhour) {
-                return timeToHours($workhour->daily_workhours);
-            });
-
-            $overtime = $groupedWorkhours->sum(function ($workhour) {
-                return timeToHours($workhour->daily_overtime);
-            });
-
-            $rate = $request->input("labor_types.$labor_id");
-
-            if ($hoursWorked > 8) {
-                $hoursWorked = 8; // Store 8 hours in the hours_worked column
-                $subtotal = 8 * $rate;
-                $overtimeAmount = 1.5 * $overtime * $rate;
-                $totalBreakdownAmount = $subtotal + $overtimeAmount;
-            } else {
-                $subtotal = $hoursWorked * $rate;
-                $totalBreakdownAmount = $subtotal;
+            // Track unique employees
+            if (!in_array($employeeId, $employeeTracker)) {
+                $employeeTracker[] = $employeeId;
             }
 
-            $totalEmployees = $groupedWorkhours->groupBy('employee_id')->count();
+            // Track employees who have daily overtime
+            if (timeToHours($workhour->daily_overtime) > 0 && !in_array($employeeId, $overtimeEmployeeTracker)) {
+                $overtimeEmployeeTracker[] = $employeeId;
+            }
 
-            // Add the breakdown amount to the total invoice amount
-            $totalAmount += $totalBreakdownAmount;
-
-            $invoiceBreakdowns[] = [
-                'labor_type_id' => $labor_id,
-                'work_date' => $work_date,
-                'hours_worked' => $hoursWorked, // Storing the adjusted hours worked
-                'overtime_work' => $overtime,
-                'rate' => $rate,
-                'overtime_amount' => $overtimeAmount,
-                'subtotal' => $subtotal,
-                'total_amount' => $totalBreakdownAmount,
-                'total_employees' => $totalEmployees,
-            ];
+            // Calculate standard hours and cap at 8 hours per day
+            if ($standardHours > 8) {
+                $totalStandardHours += 8; // Cap regular hours at 8
+                $totalOvertimeHours += $standardHours - 8; // Overtime is any hours above 8
+            } else {
+                $totalStandardHours += $standardHours; // No overtime, just sum up standard hours
+            }
         }
 
-        // Calculate the grand total with tax
-        $grandTotal = $totalAmount + ($totalAmount * ($tax / 100));
+        // Overtime hours from the workhour data
+        $additionalOvertime = $groupedWorkhours->sum(function ($workhour) {
+            return timeToHours($workhour->daily_overtime);
+        });
 
-        // Create the invoice with the total amount being the sum of the breakdowns
-        $invoice = Invoice::create([
-            'client_id' => $request->client_id,
-            'from_date' => $request->from_date,
-            'to_date' => $request->to_date,
-            'due_date' => $request->due_date,
-            'status' => 0,
-            'total_amount' => $totalAmount,
-            'customer_prefix' => $request->prefix,
-            'tax' => $tax,
-            'remarks' => $request->remarks,
+        // Sum total overtime (from standard hours over 8 and any additional daily overtime)
+        $totalOvertimeHours += $additionalOvertime;
+
+        // Get the rate for the labor type
+        $rate = $request->input("labor_types.$labor_id");
+
+        // Calculate the subtotal (standard hours * rate)
+        $subtotal = $totalStandardHours * $rate;
+
+        // Calculate overtime pay (overtime hours * 1.5 * rate)
+        $overtimeAmount = $totalOvertimeHours * 1.5 * $rate;
+
+        // Total amount for this breakdown (standard + overtime)
+        $totalBreakdownAmount = $subtotal + $overtimeAmount;
+
+        // Count total employees and overtime employees for this date
+        $totalEmployees = count($employeeTracker);  // Total unique employees for the date
+        $overtimeEmployees = count($overtimeEmployeeTracker);  // Employees who worked overtime
+
+        // Add the number of overtime employees to the total overtime employee count across all days
+        $totalOvertimeEmployees += $overtimeEmployees;
+
+        // Add the breakdown amount to the total invoice amount
+        $totalAmount += $totalBreakdownAmount;
+
+        // Store the breakdown information
+        $invoiceBreakdowns[] = [
+            'labor_type_id' => $labor_id,
+            'work_date' => $work_date,
+            'hours_worked' => $totalStandardHours, // Total regular hours worked
+            'overtime_work' => $totalOvertimeHours, // Total overtime hours
+            'rate' => $rate,
+            'overtime_amount' => $overtimeAmount,
+            'subtotal' => $subtotal,
+            'total_amount' => $totalBreakdownAmount,
             'total_employees' => $totalEmployees,
-            'grand_total' => $grandTotal
-        ]);
-
-        // Save the breakdowns
-        foreach ($invoiceBreakdowns as &$breakdown) {
-            $breakdown['invoice_id'] = $invoice->id;
-        }
-
-        InvoiceBreakdown::insert($invoiceBreakdowns);
-
-        $notification = array(
-            'message' => 'Invoice Added Successfully',
-            'alert-type' => 'success',
-        );
-        return redirect()->route('invoices.show')->with($notification);
+            'overtime_employees' => $overtimeEmployees, // Count of employees who worked overtime for this date
+        ];
     }
+
+    // Calculate the grand total with tax
+    $grandTotal = $totalAmount + ($totalAmount * ($tax / 100));
+
+    // Create the invoice with the total amount being the sum of the breakdowns
+    $invoice = Invoice::create([
+        'client_id' => $request->client_id,
+        'from_date' => $request->from_date,
+        'to_date' => $request->to_date,
+        'due_date' => $request->due_date,
+        'status' => 0,
+        'total_amount' => $totalAmount,
+        'customer_prefix' => $request->prefix,
+        'tax' => $tax,
+        'remarks' => $request->remarks,
+        'total_employees' => count($workhours->pluck('employee_id')->unique()),  // Total unique employees
+        'grand_total' => $grandTotal
+    ]);
+
+    // Save the breakdowns with the invoice ID
+    foreach ($invoiceBreakdowns as &$breakdown) {
+        $breakdown['invoice_id'] = $invoice->id;
+    }
+
+    InvoiceBreakdown::insert($invoiceBreakdowns);
+
+    // Return success notification
+    $notification = [
+        'message' => 'Invoice Added Successfully',
+        'alert-type' => 'success',
+    ];
+
+    return redirect()->route('invoices.show')->with($notification);
+}
+
+
+
 
 
 
@@ -208,9 +251,10 @@ class InvoiceController extends Controller
             'labor_types' => $labor_types,
         ]);
     }
+
     public function previewPdf($id)
     {
-        $invoice = Invoice::with('client' ,'invoiceBreakdowns.labour')->findOrFail($id);
+        $invoice = Invoice::with('client', 'invoiceBreakdowns.labour')->findOrFail($id);
         $breakdowns = $invoice->invoiceBreakdowns;
 
         // Group the breakdowns by date and labor type
@@ -230,16 +274,21 @@ class InvoiceController extends Controller
             $totalAmount = $items->sum('subtotal');
             $totalOvertimeAmount = $items->where('overtime_work', '>', 0)->sum('overtime_amount'); // Assuming this field exists
 
+            // Use the sum of the total_employees column instead of counting unique employee IDs
+            $employeeCount = $items->sum('total_employees');
+            $overtime_employees = $items->sum('overtime_employees');
+
             return [
                 'items' => $items,
                 'rate' => $rate,
                 'total_hours' => $totalHours,
                 'total_overtime' => $totalOvertime,
-                'employee_count' => $items->unique('employee_id')->count(),
+                'employee_count' => $employeeCount, // Use the total_employees column
                 'total_amount' => $totalAmount,
                 'total_overtime_amount' => $totalOvertimeAmount,
                 'labor_type' => $laborTypeInitials, // Display initials instead of full labor type name
                 'work_date' => $workDate,
+                'overtime_employees'=>$overtime_employees,
             ];
         });
 
@@ -254,8 +303,6 @@ class InvoiceController extends Controller
 
         return $pdf->stream('invoice_' . $id);
     }
-
-
 
 
     public function downloadPdf($id)
@@ -279,17 +326,19 @@ class InvoiceController extends Controller
             $rate = $items->first()->rate;
             $totalAmount = $items->sum('subtotal');
             $totalOvertimeAmount = $items->where('overtime_work', '>', 0)->sum('overtime_amount'); // Assuming this field exists
-
+            $employeeCount = $items->sum('total_employees');
+            $overtime_employees = $items->sum('overtime_employees');
             return [
                 'items' => $items,
                 'rate' => $rate,
                 'total_hours' => $totalHours,
                 'total_overtime' => $totalOvertime,
-                'employee_count' => $items->unique('employee_id')->count(),
+                'employee_count' => $employeeCount,
                 'total_amount' => $totalAmount,
                 'total_overtime_amount' => $totalOvertimeAmount,
                 'labor_type' => $laborTypeInitials,
                 'work_date' => $workDate,
+                'overtime_employees'=>$overtime_employees,
             ];
         });
 
@@ -345,16 +394,19 @@ class InvoiceController extends Controller
             $totalOvertimeAmount = $items->where('overtime_work', '>', 0)->sum('overtime_amount'); // Assuming this field exists
 
             $laborTypeInitials = $this->generateInitials($items->first()->labour->name);
+            $employeeCount = $items->sum('total_employees');
+            $overtime_employees = $items->sum('overtime_employees');
             return [
                 'items' => $items,
                 'rate' => $rate,
                 'total_hours' => $totalHours,
                 'total_overtime' => $totalOvertime,
-                'employee_count' => $items->unique('employee_id')->count(),
+                'employee_count' => $employeeCount,
                 'subtotal' => $subtotal,
                 'total_amount' => $totalAmount,
                 'total_overtime_amount' => $totalOvertimeAmount,
-                'labor_type' => $laborTypeInitials // Fetch the labor type name
+                'labor_type' => $laborTypeInitials,
+                'overtime_employees'=>$overtime_employees, // Fetch the labor type name
             ];
         });
 
@@ -388,18 +440,20 @@ class InvoiceController extends Controller
             $subtotal = $items->sum('subtotal');
             $totalAmount = $items->sum('total_amount');
             $totalOvertimeAmount = $items->where('overtime_work', '>', 0)->sum('overtime_amount'); // Assuming this field exists
-
+            $employeeCount = $items->sum('total_employees');
+            $overtime_employees = $items->sum('overtime_employees');
             $laborTypeInitials = $this->generateInitials($items->first()->labour->name);
             return [
                 'items' => $items,
                 'rate' => $rate,
                 'total_hours' => $totalHours,
                 'total_overtime' => $totalOvertime,
-                'employee_count' => $items->unique('employee_id')->count(),
+                'employee_count' => $employeeCount,
                 'subtotal' => $subtotal,
                 'total_amount' => $totalAmount,
                 'total_overtime_amount' => $totalOvertimeAmount,
-                'labor_type' => $laborTypeInitials // Fetch the labor type name
+                'labor_type' => $laborTypeInitials,
+                'overtime_employees'=>$overtime_employees, // Fetch the labor type name
             ];
         });
 

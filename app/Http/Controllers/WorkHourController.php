@@ -112,12 +112,17 @@ public function save_import_workhour(Request $request)
 
         if ($hoursWorked > 8)
         {
+            $standardHours = '08:00:00';
+
             $totalAmount = 8 * $request->rate[$index] + 1.5 * $request->rate[$index] * $dailyOvertimeHours;
         }
         else
         {
+            $standardHours = sprintf('%02d:%02d', $hoursWorked, $minutesWorked);
+
             $totalAmount = $hoursWorked * $request->rate[$index];
         }
+
 
 
         // Store the work hours in the database
@@ -135,6 +140,7 @@ public function save_import_workhour(Request $request)
         $workhour->weekly_overtime = gmdate('H:i:s', $weeklyOvertimeSeconds); // Store weekly overtime as TIME with seconds
         $workhour->break_time = $breakTimeMinutes; // Store break time in minutes
         $workhour->rate = $request->rate[$index];
+        $workhour->standard_hours = $standardHours;
         $workhour->total_amount = $totalAmount;
         $workhour->save();
 
@@ -228,10 +234,19 @@ public function save_import_workhour(Request $request)
         // Determine if overtime is applicable
         $dailyOvertimeHours = 0;
         $dailyOvertimeMinutes = 0;
-        if ($hoursWorked >= 8) {
+        if ($hoursWorked > 8)
+        {
             $dailyOvertimeMinutes = ($hoursWorked - 8) * 60 + $minutesWorked;
             $dailyOvertimeHours = intdiv($dailyOvertimeMinutes, 60);
             $dailyOvertimeMinutes = $dailyOvertimeMinutes % 60;
+            $standardHours = '08:00:00';
+            $totalAmount = 8 * $request->rate + 1.5 * $request->rate * $dailyOvertimeHours;
+        }
+        else
+        {
+            $standardHours = sprintf('%02d:%02d', $hoursWorked, $minutesWorked);
+
+            $totalAmount = $hoursWorked * $request->rate;
         }
 
         $employeeId=$workhour->employee_id;
@@ -251,8 +266,6 @@ public function save_import_workhour(Request $request)
         }
 
 
-        // Calculate the total amount
-        $totalAmount = ($hoursWorked + $minutesWorked / 60) * $request->rate;
 
         $workhour->employee_id = $request->employee_id;
         $workhour->client_id = $request->client_id;
@@ -266,6 +279,7 @@ public function save_import_workhour(Request $request)
         $workhour->overtime = ($dailyOvertimeHours > 0 || $dailyOvertimeMinutes > 0) ? 1 : 0;
         $workhour->rate = $request->rate;
         $workhour->labour_id = $request->labour_id;
+        $workhour->standard_hours = $standardHours;
         $workhour->total_amount = $totalAmount;
         $workhour->save();
 

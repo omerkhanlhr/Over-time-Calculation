@@ -129,7 +129,7 @@
 
                 @if($data['total_overtime'] > 0)
                     <tr>
-                        <td><strong>{{\Carbon\Carbon::parse($date)->format('M d') }} - ({{ $data['employee_count'] }} Personnel Provided) {{ $data['labor_type'] }}</strong> </td>
+                        <td><strong>{{\Carbon\Carbon::parse($date)->format('M d') }} - ({{ $data['overtime_employees'] }} Personnel Provided) {{ $data['labor_type'] }} -OT</strong> </td>
                         <td>{{ $data['total_overtime'] }}</td>
                         <td>CA${{ number_format($data['rate'], 2) }}</td>
                         <td>CA${{ number_format($data['total_overtime_amount'], 2) }}</td>
