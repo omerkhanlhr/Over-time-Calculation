@@ -98,7 +98,7 @@ class InvoiceController extends Controller
             return timeToHours($workhour->daily_overtime);
         });
 
-        // Sum total overtime (from standard hours over 8 and any additional daily overtime)
+       
         $totalOvertimeHours += $additionalOvertime;
 
         // Get the rate for the labor type
