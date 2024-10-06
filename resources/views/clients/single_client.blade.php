@@ -29,9 +29,6 @@
 
 
           </div>
-        </div>
-      </div>
-          </div>
           <h5 class="card-title mt-3 mb-3">Work Details</h5>
           <div class="table-responsive">
             <table id="dataTableExample" class="table">
@@ -68,6 +65,10 @@
               </tbody>
             </table>
           </div>
+        </div>
+      </div>
+          </div>
+
       <!-- middle wrapper end -->
       <!-- right wrapper start -->
       </div>
