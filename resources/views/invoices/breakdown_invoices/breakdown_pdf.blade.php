@@ -119,7 +119,7 @@
                 </tr>
             </thead>
             <tbody>
-                @foreach ($groupedBreakdowns as $date => $data)
+                @foreach ($sortedBreakdowns as $date => $data)
                 <tr>
                     <td><strong>{{\Carbon\Carbon::parse($date)->format('M d') }} - ({{ $data['employee_count'] }} Personnel Provided) {{ $data['labor_type'] }}</strong> </td>
                     <td>{{ $data['total_hours'] }}</td>

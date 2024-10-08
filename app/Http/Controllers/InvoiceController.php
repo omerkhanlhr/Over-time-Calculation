@@ -98,7 +98,7 @@ class InvoiceController extends Controller
             return timeToHours($workhour->daily_overtime);
         });
 
-       
+
         $totalOvertimeHours += $additionalOvertime;
 
         // Get the rate for the labor type
@@ -292,6 +292,9 @@ class InvoiceController extends Controller
             ];
         });
 
+        $sortedBreakdowns = $groupedBreakdowns->sortBy(function ($group) {
+            return $group['work_date'];
+        });
         // Handle logo
         $path = public_path('images/logo.png');
         $type = pathinfo($path, PATHINFO_EXTENSION);
@@ -299,7 +302,7 @@ class InvoiceController extends Controller
         $base64 = 'data:image/' . $type . ';base64,' . base64_encode($data);
 
         $pdfView = 'invoices.invoice_pdf';
-        $pdf = PDF::loadView($pdfView, compact('invoice', 'groupedBreakdowns', 'breakdowns', 'base64'));
+        $pdf = PDF::loadView($pdfView, compact('invoice', 'sortedBreakdowns' , 'groupedBreakdowns', 'breakdowns', 'base64'));
 
         return $pdf->stream('invoice_' . $id);
     }
@@ -342,6 +345,10 @@ class InvoiceController extends Controller
             ];
         });
 
+        $sortedBreakdowns = $groupedBreakdowns->sortBy(function ($group) {
+            return $group['work_date'];
+        });
+
         // Handle logo
         $path = public_path('images/logo.png');
         $type = pathinfo($path, PATHINFO_EXTENSION);
@@ -349,7 +356,7 @@ class InvoiceController extends Controller
         $base64 = 'data:image/' . $type . ';base64,' . base64_encode($data);
 
         $pdfView = 'invoices.invoice_pdf';
-        $pdf = PDF::loadView($pdfView, compact('invoice', 'groupedBreakdowns', 'breakdowns', 'base64'));
+        $pdf = PDF::loadView($pdfView, compact('invoice', 'sortedBreakdowns' ,'groupedBreakdowns', 'breakdowns', 'base64'));
 
         return $pdf->download('invoice_' . $id . '.pdf');
     }
@@ -410,14 +417,19 @@ class InvoiceController extends Controller
             ];
         });
 
+        $sortedBreakdowns = $groupedBreakdowns->sortBy(function ($items, $date) {
+            return \Carbon\Carbon::parse($date); // Sort by work_date as Carbon date
+        });
+
         // Convert the company logo to base64
         $path = public_path('images/logo.png');
         $type = pathinfo($path, PATHINFO_EXTENSION);
         $data = file_get_contents($path);
         $base64 = 'data:image/' . $type . ';base64,' . base64_encode($data);
 
+
         // Load the breakdown PDF view and pass the required data
-        $pdf = PDF::loadView('invoices.breakdown_invoices.breakdown_pdf', compact('invoice', 'groupedBreakdowns', 'base64', 'breakdowns'));
+        $pdf = PDF::loadView('invoices.breakdown_invoices.breakdown_pdf', compact('invoice', 'sortedBreakdowns' , 'groupedBreakdowns', 'base64', 'breakdowns'));
 
         return $pdf->stream('invoice_' . $invoiceId . '_breakdown_' . $laborType . '.pdf');
     }
@@ -457,13 +469,17 @@ class InvoiceController extends Controller
             ];
         });
 
+        $sortedBreakdowns = $groupedBreakdowns->sortBy(function ($items, $date) {
+            return \Carbon\Carbon::parse($date); // Sort by work_date as Carbon date
+        });
+
         // Convert the company logo to base64
         $path = public_path('images/logo.png');
         $type = pathinfo($path, PATHINFO_EXTENSION);
         $data = file_get_contents($path);
         $base64 = 'data:image/' . $type . ';base64,' . base64_encode($data);
 
-        $pdf = PDF::loadView('invoices.breakdown_invoices.breakdown_pdf', compact('invoice', 'groupedBreakdowns', 'base64', 'breakdowns'));
+        $pdf = PDF::loadView('invoices.breakdown_invoices.breakdown_pdf', compact('invoice', 'sortedBreakdowns' ,'groupedBreakdowns', 'base64', 'breakdowns'));
 
         return $pdf->download('invoice ' . $invoiceId . ' ' . $laborType . '.pdf');
     }
