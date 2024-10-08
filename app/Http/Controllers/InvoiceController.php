@@ -486,18 +486,25 @@ class InvoiceController extends Controller
 
     // Helper function to generate initials from labor type name
     private function generateInitials($laborTypeName)
-    {
-        $words = explode(' ', $laborTypeName);
-        $initials = '';
+{
+    // Split the labor type name into words
+    $words = explode(' ', $laborTypeName);
 
-        foreach ($words as $word) {
-            if (strlen($word) > 0) {
-                $initials .= strtoupper($word[0]);
-            }
-        }
-
-        return $initials;
+    // If there's only one word, return it as is (capitalized)
+    if (count($words) === 1) {
+        return ucfirst($laborTypeName); // Capitalize the first letter of the word
     }
+
+    // If there are multiple words, generate initials
+    $initials = '';
+    foreach ($words as $word) {
+        if (strlen($word) > 0) {
+            $initials .= strtoupper($word[0]); // Get the first letter of each word
+        }
+    }
+
+    return $initials;
+}
 
     public function edit($id)
     {
