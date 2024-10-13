@@ -21,158 +21,216 @@ class InvoiceController extends Controller
     }
 
     public function createInvoice(Request $request)
-{
-    $request->validate([
-        'client_id' => 'required',
-        'from_date' => 'required|date',
-        'to_date' => 'required|date',
-        'due_date' => 'required|date',
-        'tax' => 'nullable|numeric'
-    ]);
-
-    $workhours = Workhour::where('client_id', $request->client_id)
-        ->whereBetween('work_date', [$request->from_date, $request->to_date])
-        ->with('labour')
-        ->get();
-
-    if ($workhours->isEmpty()) {
-        return redirect()->back()->with('error', 'No work hours found for the selected dates.');
-    }
-
-    // Initialize totals
-    $totalAmount = 0;
-    $totalEmployees = 0;
-    $totalOvertimeEmployees = 0;  // Total count of overtime employees across all days
-    $tax = $request->tax;
-
-    // Helper function to convert time to decimal hours
-    function timeToHours($time)
     {
-        list($hours, $minutes, $seconds) = explode(':', $time);
-        return $hours + ($minutes / 60) + ($seconds / 3600);
-    }
+        $request->validate([
+            'client_id' => 'required',
+            'from_date' => 'required|date',
+            'to_date' => 'required|date',
+            'due_date' => 'required|date',
+            'tax' => 'nullable|numeric'
+        ]);
 
-    // Group work hours by labor type and date
-    $laborTypeDateGroups = $workhours->groupBy(function ($workhour) {
-        return $workhour->labour_id . '_' . $workhour->work_date;
-    });
+        $workhours = Workhour::where('client_id', $request->client_id)
+            ->whereBetween('work_date', [$request->from_date, $request->to_date])
+            ->with('labour')
+            ->get();
 
-    $invoiceBreakdowns = [];
-
-    foreach ($laborTypeDateGroups as $key => $groupedWorkhours) {
-        list($labor_id, $work_date) = explode('_', $key);
-
-        // Sum all standard hours and overtime for this labor type on the given date
-        $totalStandardHours = 0;
-        $totalOvertimeHours = 0;
-
-        // Track unique employees and overtime employees
-        $employeeTracker = [];
-        $overtimeEmployeeTracker = [];
-
-        foreach ($groupedWorkhours as $workhour) {
-            $standardHours = timeToHours($workhour->standard_hours);
-            $employeeId = $workhour->employee_id;
-
-            // Track unique employees
-            if (!in_array($employeeId, $employeeTracker)) {
-                $employeeTracker[] = $employeeId;
-            }
-
-            // Track employees who have daily overtime
-            if (timeToHours($workhour->daily_overtime) > 0 && !in_array($employeeId, $overtimeEmployeeTracker)) {
-                $overtimeEmployeeTracker[] = $employeeId;
-            }
-
-            // Calculate standard hours and cap at 8 hours per day
-            if ($standardHours > 8) {
-                $totalStandardHours += 8; // Cap regular hours at 8
-                $totalOvertimeHours += $standardHours - 8; // Overtime is any hours above 8
-            } else {
-                $totalStandardHours += $standardHours; // No overtime, just sum up standard hours
-            }
+        if ($workhours->isEmpty()) {
+            return redirect()->back()->with('error', 'No work hours found for the selected dates.');
         }
 
-        // Overtime hours from the workhour data
-        $additionalOvertime = $groupedWorkhours->sum(function ($workhour) {
-            return timeToHours($workhour->daily_overtime);
+        // Initialize totals
+        $totalAmount = 0;
+        $totalEmployees = 0;
+        $totalOvertimeEmployees = 0;  // Total count of overtime employees across all days
+        $totalStatsEmployees = 0;  // Total count of overtime employees across all days
+        $totalStatsOvertimeEmployees = 0;  // Total count of overtime employees across all days
+        $tax = $request->tax;
+
+        // Helper function to convert time to decimal hours
+        function timeToHours($time)
+        {
+            list($hours, $minutes, $seconds) = explode(':', $time);
+            return $hours + ($minutes / 60) + ($seconds / 3600);
+        }
+
+        // Group work hours by labor type and date
+        $laborTypeDateGroups = $workhours->groupBy(function ($workhour) {
+            return $workhour->labour_id . '_' . $workhour->work_date;
         });
 
+        $invoiceBreakdowns = [];
 
-        $totalOvertimeHours += $additionalOvertime;
+        foreach ($laborTypeDateGroups as $key => $groupedWorkhours) {
+            list($labor_id, $work_date) = explode('_', $key);
 
-        // Get the rate for the labor type
-        $rate = $request->input("labor_types.$labor_id");
+            // Sum all standard hours and overtime for this labor type on the given date
+            $totalStandardHours = 0;
+            $totalOvertimeHours = 0;
+            $totalstatsHours = 0;
+            $totalstatsOvertimeHours = 0;
 
-        // Calculate the subtotal (standard hours * rate)
-        $subtotal = $totalStandardHours * $rate;
+            // Track unique employees and overtime employees
+            $employeeTracker = [];
 
-        // Calculate overtime pay (overtime hours * 1.5 * rate)
-        $overtimeAmount = $totalOvertimeHours * 1.5 * $rate;
+            $overtimeEmployeeTracker = [];
 
-        // Total amount for this breakdown (standard + overtime)
-        $totalBreakdownAmount = $subtotal + $overtimeAmount;
+            $statEmployeeTracker = [];
 
-        // Count total employees and overtime employees for this date
-        $totalEmployees = count($employeeTracker);  // Total unique employees for the date
-        $overtimeEmployees = count($overtimeEmployeeTracker);  // Employees who worked overtime
+            $statOvertimeEmployeeTracker = [];
 
-        // Add the number of overtime employees to the total overtime employee count across all days
-        $totalOvertimeEmployees += $overtimeEmployees;
+            foreach ($groupedWorkhours as $workhour) {
+                $standardHours = timeToHours($workhour->standard_hours);
+                $stat_standardHours = timeToHours($workhour->stats_standard_hours);
+                $stat_overtimeHours = timeToHours($workhour->stats_overtime_hours);  // Get stats overtime hours
+                $employeeId = $workhour->employee_id;
 
-        // Add the breakdown amount to the total invoice amount
-        $totalAmount += $totalBreakdownAmount;
+                // Track unique employees
+                if (!in_array($employeeId, $employeeTracker)) {
+                    $employeeTracker[] = $employeeId;
+                }
 
-        // Store the breakdown information
-        $invoiceBreakdowns[] = [
-            'labor_type_id' => $labor_id,
-            'work_date' => $work_date,
-            'hours_worked' => $totalStandardHours, // Total regular hours worked
-            'overtime_work' => $totalOvertimeHours, // Total overtime hours
-            'rate' => $rate,
-            'overtime_amount' => $overtimeAmount,
-            'subtotal' => $subtotal,
-            'total_amount' => $totalBreakdownAmount,
-            'total_employees' => $totalEmployees,
-            'overtime_employees' => $overtimeEmployees, // Count of employees who worked overtime for this date
+                // Track employees who have worked stats overtime
+                if ($stat_standardHours > 0 && !in_array($employeeId, $statEmployeeTracker)) {
+                    $statEmployeeTracker[] = $employeeId;
+                }
+
+                // Track employees who worked overtime (from daily overtime column)
+                if (timeToHours($workhour->daily_overtime) > 0 && !in_array($employeeId, $overtimeEmployeeTracker)) {
+                    $overtimeEmployeeTracker[] = $employeeId;
+                }
+
+                // Track employees who have worked stats overtime
+                if ($stat_overtimeHours > 0 && !in_array($employeeId, $statOvertimeEmployeeTracker)) {
+                    $statOvertimeEmployeeTracker[] = $employeeId;
+                }
+
+                // Calculate standard hours and cap at 8 hours per day
+                if ($standardHours > 8) {
+                    $totalStandardHours += 8; // Cap regular hours at 8
+                    $totalOvertimeHours += $standardHours - 8; // Overtime is any hours above 8
+                } else {
+                    $totalStandardHours += $standardHours; // No overtime, just sum up standard hours
+                }
+
+                // Calculate stats standard hours and cap at 8 hours per day
+                if ($stat_standardHours > 8) {
+                    $totalstatsHours += 8; // Cap regular hours at 8
+                    $totalstatsOvertimeHours += $stat_standardHours - 8; // Overtime is any hours above 8
+                } else {
+                    $totalstatsHours += $stat_standardHours; // No overtime, just sum up standard hours
+                }
+            }
+            // Overtime hours from the workhour data
+            $additionalOvertime = $groupedWorkhours->sum(function ($workhour) {
+                return timeToHours($workhour->daily_overtime);
+            });
+
+            $additionalstatsOvertime = $groupedWorkhours->sum(function ($workhour) {
+                return timeToHours($workhour->stats_overtime_hours);
+            });
+
+            $totalOvertimeHours += $additionalOvertime;
+
+            $totalstatsOvertimeHours += $additionalstatsOvertime;
+
+            // Get the rate for the labor type
+            $rate = $request->input("labor_types.$labor_id");
+
+            $overtimeRate = $request->input("overtime_rates.$labor_id");
+
+            $statsovertimeRate = $request->input("stats_overtime_rates.$labor_id");
+
+            $statsRate = $request->input("stats_rates.$labor_id");
+
+
+
+            // Calculate the subtotal (standard hours * rate)
+            $subtotal = $totalStandardHours * $rate;
+
+            // Calculate overtime pay (overtime hours * 1.5 * rate)
+            $overtimeAmount = $totalOvertimeHours * 1.5 * $overtimeRate;
+
+            $statsAmount = $totalstatsHours * $statsRate;
+
+            $statsOvertimeAmount = $totalstatsOvertimeHours * 1.5 * $statsovertimeRate;
+
+            // Total amount for this breakdown (standard + overtime)
+            $totalBreakdownAmount = $subtotal + $overtimeAmount + $statsAmount + $statsOvertimeAmount;
+
+            // Count total employees and overtime employees for this date
+            $totalEmployees = count($employeeTracker);  // Total unique employees for the date
+            $overtimeEmployees = count($overtimeEmployeeTracker);  // Employees who worked overtime
+            $statsEmployees = count($statEmployeeTracker);  // Employees who worked overtime
+            $statsovertimeEmployees = count($statOvertimeEmployeeTracker);  // Employees who worked overtime
+
+            // Add the number of overtime employees to the total overtime employee count across all days
+            $totalOvertimeEmployees += $overtimeEmployees;
+
+            $totalStatsEmployees += $statsEmployees;
+
+            $totalStatsOvertimeEmployees += $statsovertimeEmployees;
+
+            // Add the breakdown amount to the total invoice amount
+            $totalAmount += $totalBreakdownAmount;
+
+            // Store the breakdown information
+            $invoiceBreakdowns[] = [
+                'labor_type_id' => $labor_id,
+                'work_date' => $work_date,
+                'hours_worked' => $totalStandardHours, // Total regular hours worked
+                'stats_hours'=> $totalstatsHours,
+                'overtime_work' => $totalOvertimeHours, // Total overtime hours
+                'stats_overtime'=>$totalstatsOvertimeHours,
+                'rate' => $rate,
+                'overtime_amount' => $overtimeAmount,
+                'subtotal' => $subtotal,
+                'overtime_rate'=>$overtimeRate,
+                'total_amount' => $totalBreakdownAmount,
+                'total_employees' => $totalEmployees,
+                'overtime_employees' => $overtimeEmployees,
+                'stats_employees'=>$statsEmployees,
+                'stats_overtime_employees'=>$statsovertimeEmployees,
+                'stats_rate'=>$statsRate,
+                'stats_overtime_rate'=>$statsovertimeRate,
+                'stats_amount'=>$statsAmount,
+                'stats_overtime_amount'=>$statsOvertimeAmount // Count of employees who worked overtime for this date
+            ];
+        }
+
+        // Calculate the grand total with tax
+        $grandTotal = $totalAmount + ($totalAmount * ($tax / 100));
+
+        // Create the invoice with the total amount being the sum of the breakdowns
+        $invoice = Invoice::create([
+            'client_id' => $request->client_id,
+            'from_date' => $request->from_date,
+            'to_date' => $request->to_date,
+            'due_date' => $request->due_date,
+            'status' => 0,
+            'total_amount' => $totalAmount,
+            'customer_prefix' => $request->prefix,
+            'tax' => $tax,
+            'remarks' => $request->remarks,
+            'total_employees' => count($workhours->pluck('employee_id')->unique()),  // Total unique employees
+            'grand_total' => $grandTotal
+        ]);
+
+        // Save the breakdowns with the invoice ID
+        foreach ($invoiceBreakdowns as &$breakdown) {
+            $breakdown['invoice_id'] = $invoice->id;
+        }
+
+        InvoiceBreakdown::insert($invoiceBreakdowns);
+
+        // Return success notification
+        $notification = [
+            'message' => 'Invoice Added Successfully',
+            'alert-type' => 'success',
         ];
+
+        return redirect()->route('invoices.show')->with($notification);
     }
-
-    // Calculate the grand total with tax
-    $grandTotal = $totalAmount + ($totalAmount * ($tax / 100));
-
-    // Create the invoice with the total amount being the sum of the breakdowns
-    $invoice = Invoice::create([
-        'client_id' => $request->client_id,
-        'from_date' => $request->from_date,
-        'to_date' => $request->to_date,
-        'due_date' => $request->due_date,
-        'status' => 0,
-        'total_amount' => $totalAmount,
-        'customer_prefix' => $request->prefix,
-        'tax' => $tax,
-        'remarks' => $request->remarks,
-        'total_employees' => count($workhours->pluck('employee_id')->unique()),  // Total unique employees
-        'grand_total' => $grandTotal
-    ]);
-
-    // Save the breakdowns with the invoice ID
-    foreach ($invoiceBreakdowns as &$breakdown) {
-        $breakdown['invoice_id'] = $invoice->id;
-    }
-
-    InvoiceBreakdown::insert($invoiceBreakdowns);
-
-    // Return success notification
-    $notification = [
-        'message' => 'Invoice Added Successfully',
-        'alert-type' => 'success',
-    ];
-
-    return redirect()->route('invoices.show')->with($notification);
-}
-
-
 
 
 
@@ -216,41 +274,63 @@ class InvoiceController extends Controller
     }
 
     public function getLaborTypes(Request $request)
+{
+    function timeToHours($time)
     {
-        $client_id = $request->client_id;
-        $from_date = $request->from_date;
-        $to_date = $request->to_date;
-
-        Log::info('Received request:', [
-            'client_id' => $client_id,
-            'from_date' => $from_date,
-            'to_date' => $to_date,
-        ]);
-
-        // Fetch work hours for the selected client and date range
-        $workhours = Workhour::where('client_id', $client_id)
-            ->whereBetween('work_date', [$from_date, $to_date])
-            ->with('labour') // Using the correct relationship
-            ->get();
-
-        Log::info('Fetched workhours:', $workhours->toArray());
-
-        // Get unique labor types
-        $labor_types = $workhours->groupBy('labour_id')->map(function ($workhourGroup) {
-            $labour = $workhourGroup->first()->labour;
-            return [
-                'id' => $labour ? $labour->id : null,
-                'name' => $labour ? $labour->name : 'Unknown Labor Type',
-            ];
-        })->values();
-
-        Log::info('Labor Types:', $labor_types->toArray());
-
-        // Return labor types as JSON
-        return response()->json([
-            'labor_types' => $labor_types,
-        ]);
+        list($hours, $minutes, $seconds) = explode(':', $time);
+        return $hours + ($minutes / 60) + ($seconds / 3600); // Ensure it returns decimal
     }
+
+    $client_id = $request->client_id;
+    $from_date = $request->from_date;
+    $to_date = $request->to_date;
+
+    Log::info('Received request:', [
+        'client_id' => $client_id,
+        'from_date' => $from_date,
+        'to_date' => $to_date,
+    ]);
+
+
+    // Fetch work hours for the selected client and date range
+    $workhours = Workhour::where('client_id', $client_id)
+        ->whereBetween('work_date', [$from_date, $to_date])
+        ->with('labour') // Ensure correct relationship is used
+        ->get();
+
+    Log::info('Fetched workhours:', $workhours->toArray());
+
+    // Get unique labor types along with overtime information
+    $labor_types = $workhours->groupBy('labour_id')->map(function ($workhourGroup) {
+        $labour = $workhourGroup->first()->labour;
+
+        // Check if any work hours in the group have overtime (e.g., > 8 hours in a day)
+        $hasOvertime = $workhourGroup->some(function ($workhour) {
+            $standardHours = timeToHours($workhour->standard_hours);
+            return $standardHours > 8 || timeToHours($workhour->daily_overtime) > 0;
+        });
+        $stats_hours = $workhourGroup->some(function ($workhour) {
+            $standardHours = timeToHours($workhour->stats_standard_hours);
+            return $standardHours > 8 || timeToHours($workhour->stats_overtime_hours) > 0;
+        });
+
+
+        return [
+            'id' => $labour ? $labour->id : null,
+            'name' => $labour ? $labour->name : 'Unknown Labor Type',
+            'overtime' => $hasOvertime,
+            'stats_hours'=>$stats_hours
+        ];
+    })->values();
+
+    Log::info('Labor Types with Overtime:', $labor_types->toArray());
+
+    // Return labor types as JSON
+    return response()->json([
+        'labor_types' => $labor_types,
+    ]);
+}
+
 
     public function previewPdf($id)
     {
@@ -269,25 +349,58 @@ class InvoiceController extends Controller
             $laborTypeInitials = $this->generateInitials($laborType);
 
             $totalHours = $items->sum('hours_worked');
+
             $totalOvertime = $items->sum('overtime_work'); // Assuming this field exists
+
+            $statsHours = $items->sum('stats_hours'); // Assuming this field exists
+
+            $statsOvertime = $items->sum('stats_overtime'); // Assuming this field exists
+
             $rate = $items->first()->rate;
+
+            $overtime_rate = $items->first()->overtime_rate;
+
+            $stats_rate = $items->first()->stats_rate;
+
+            $stats_overtime_rate = $items->first()->stats_overtime_rate;
+
             $totalAmount = $items->sum('subtotal');
+
             $totalOvertimeAmount = $items->where('overtime_work', '>', 0)->sum('overtime_amount'); // Assuming this field exists
 
+            $totalStatAmount = $items->where('stats_hours', '>', 0)->sum('stats_amount'); // Assuming this field exists
+
+            $totalStatOvertimeAmount = $items->where('stats_overtime', '>', 0)->sum('stats_overtime_amount'); // Assuming this field exists
+
             // Use the sum of the total_employees column instead of counting unique employee IDs
+
             $employeeCount = $items->sum('total_employees');
+
             $overtime_employees = $items->sum('overtime_employees');
+
+            $stats_employees = $items->sum('stats_employees');
+
+            $stats_overtime_employees = $items->sum('stats_overtime_employees');
 
             return [
                 'items' => $items,
+                'stats_rate'=>$stats_rate,
+                'stats_overtime_rate'=>$stats_overtime_rate,
+                'total_stat_amount'=>$totalStatAmount,
+                'total_stat_overtime_amount'=>$totalStatOvertimeAmount,
                 'rate' => $rate,
                 'total_hours' => $totalHours,
                 'total_overtime' => $totalOvertime,
+                'statsHours'=>$statsHours,
+                'statsOvertime'=>$statsOvertime,
                 'employee_count' => $employeeCount, // Use the total_employees column
                 'total_amount' => $totalAmount,
+                'stats_employees'=>$stats_employees,
+                'stats_overtime_employees'=>$stats_overtime_employees,
                 'total_overtime_amount' => $totalOvertimeAmount,
                 'labor_type' => $laborTypeInitials, // Display initials instead of full labor type name
                 'work_date' => $workDate,
+                'overtime_rate'=>$overtime_rate,
                 'overtime_employees'=>$overtime_employees,
             ];
         });
@@ -327,20 +440,39 @@ class InvoiceController extends Controller
             $totalHours = $items->sum('hours_worked');
             $totalOvertime = $items->sum('overtime_work'); // Assuming this field exists
             $rate = $items->first()->rate;
+            $overtime_rate = $items->first()->overtime_rate;
+            $stats_rate = $items->first()->stats_rate;
+            $stats_overtime_rate = $items->first()->stats_overtime_rate;
             $totalAmount = $items->sum('subtotal');
             $totalOvertimeAmount = $items->where('overtime_work', '>', 0)->sum('overtime_amount'); // Assuming this field exists
             $employeeCount = $items->sum('total_employees');
             $overtime_employees = $items->sum('overtime_employees');
+            $statsHours = $items->sum('stats_hours'); // Assuming this field exists
+            $statsOvertime = $items->sum('stats_overtime');
+            $stats_employees = $items->sum('stats_employees');
+            $stats_overtime_employees = $items->sum('stats_overtime_employees');
+            $totalStatAmount = $items->where('stats_hours', '>', 0)->sum('stats_amount'); // Assuming this field exists
+            $totalStatOvertimeAmount = $items->where('stats_overtime', '>', 0)->sum('stats_overtime_amount'); // Assuming this field exists
+
             return [
                 'items' => $items,
+                'stats_rate'=>$stats_rate,
+                'stats_overtime_rate'=>$stats_overtime_rate,
+                'total_stat_amount'=>$totalStatAmount,
+                'total_stat_overtime_amount'=>$totalStatOvertimeAmount,
                 'rate' => $rate,
                 'total_hours' => $totalHours,
+                'statsHours'=>$statsHours,
+                'statsOvertime'=>$statsOvertime,
                 'total_overtime' => $totalOvertime,
                 'employee_count' => $employeeCount,
                 'total_amount' => $totalAmount,
+                'stats_employees'=>$stats_employees,
+                'stats_overtime_employees'=>$stats_overtime_employees,
                 'total_overtime_amount' => $totalOvertimeAmount,
                 'labor_type' => $laborTypeInitials,
                 'work_date' => $workDate,
+                'overtime_rate'=>$overtime_rate,
                 'overtime_employees'=>$overtime_employees,
             ];
         });
@@ -396,22 +528,41 @@ class InvoiceController extends Controller
             $totalHours = $items->sum('hours_worked');
             $totalOvertime = $items->sum('overtime_work'); // Assuming this field exists
             $rate = $items->first()->rate;
+            $overtime_rate = $items->first()->overtime_rate;
+            $overtime_rate = $items->first()->overtime_rate;
+            $stats_rate = $items->first()->stats_rate;
+            $stats_overtime_rate = $items->first()->stats_overtime_rate;
             $subtotal = $items->sum('subtotal');
             $totalAmount = $items->sum('total_amount');
             $totalOvertimeAmount = $items->where('overtime_work', '>', 0)->sum('overtime_amount'); // Assuming this field exists
-
+            $statsHours = $items->sum('stats_hours'); // Assuming this field exists
+            $statsOvertime = $items->sum('stats_overtime');
+            $stats_employees = $items->sum('stats_employees');
+            $stats_overtime_employees = $items->sum('stats_overtime_employees');
             $laborTypeInitials = $this->generateInitials($items->first()->labour->name);
             $employeeCount = $items->sum('total_employees');
             $overtime_employees = $items->sum('overtime_employees');
+            $totalStatAmount = $items->where('stats_hours', '>', 0)->sum('stats_amount'); // Assuming this field exists
+            $totalStatOvertimeAmount = $items->where('stats_overtime', '>', 0)->sum('stats_overtime_amount'); // Assuming this field exists
+
             return [
                 'items' => $items,
+                'stats_rate'=>$stats_rate,
+                'stats_overtime_rate'=>$stats_overtime_rate,
+                'total_stat_amount'=>$totalStatAmount,
+                'total_stat_overtime_amount'=>$totalStatOvertimeAmount,
                 'rate' => $rate,
+                'statsHours'=>$statsHours,
+                'statsOvertime'=>$statsOvertime,
+                'stats_employees'=>$stats_employees,
+                'stats_overtime_employees'=>$stats_overtime_employees,
                 'total_hours' => $totalHours,
                 'total_overtime' => $totalOvertime,
                 'employee_count' => $employeeCount,
                 'subtotal' => $subtotal,
                 'total_amount' => $totalAmount,
                 'total_overtime_amount' => $totalOvertimeAmount,
+                'overtime_rate'=>$overtime_rate,
                 'labor_type' => $laborTypeInitials,
                 'overtime_employees'=>$overtime_employees, // Fetch the labor type name
             ];
@@ -449,19 +600,38 @@ class InvoiceController extends Controller
             $totalHours = $items->sum('hours_worked');
             $totalOvertime = $items->sum('overtime_work'); // Assuming this field exists
             $rate = $items->first()->rate;
+            $overtime_rate = $items->first()->overtime_rate;
             $subtotal = $items->sum('subtotal');
             $totalAmount = $items->sum('total_amount');
             $totalOvertimeAmount = $items->where('overtime_work', '>', 0)->sum('overtime_amount'); // Assuming this field exists
+            $statsHours = $items->sum('stats_hours'); // Assuming this field exists
+            $statsOvertime = $items->sum('stats_overtime');
+            $stats_employees = $items->sum('stats_employees');
+            $stats_overtime_employees = $items->sum('stats_overtime_employees');
             $employeeCount = $items->sum('total_employees');
             $overtime_employees = $items->sum('overtime_employees');
+            $stats_rate = $items->first()->stats_rate;
+            $stats_overtime_rate = $items->first()->stats_overtime_rate;
             $laborTypeInitials = $this->generateInitials($items->first()->labour->name);
+            $totalStatAmount = $items->where('stats_hours', '>', 0)->sum('stats_amount'); // Assuming this field exists
+            $totalStatOvertimeAmount = $items->where('stats_overtime', '>', 0)->sum('stats_overtime_amount'); // Assuming this field exists
+
             return [
                 'items' => $items,
+                'stats_rate'=>$stats_rate,
+                'stats_overtime_rate'=>$stats_overtime_rate,
+                'total_stat_amount'=>$totalStatAmount,
+                'total_stat_overtime_amount'=>$totalStatOvertimeAmount,
+                'statsHours'=>$statsHours,
+                'statsOvertime'=>$statsOvertime,
+                'stats_employees'=>$stats_employees,
+                'stats_overtime_employees'=>$stats_overtime_employees,
                 'rate' => $rate,
                 'total_hours' => $totalHours,
                 'total_overtime' => $totalOvertime,
                 'employee_count' => $employeeCount,
                 'subtotal' => $subtotal,
+                'overtime_rate'=>$overtime_rate,
                 'total_amount' => $totalAmount,
                 'total_overtime_amount' => $totalOvertimeAmount,
                 'labor_type' => $laborTypeInitials,

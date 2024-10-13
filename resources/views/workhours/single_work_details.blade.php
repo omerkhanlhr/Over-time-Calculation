@@ -58,6 +58,7 @@
 
             </p>
             </div>
+
             <div class="mt-3">
               <label class="tx-11 fw-bolder mb-0 text-uppercase">Break Time</label>
               <p class="text-muted">
@@ -75,10 +76,26 @@
             </p>
             </div>
             <div class="mt-3">
+              <label class="tx-11 fw-bolder mb-0 text-uppercase">Stats Over Time</label>
+              <p class="text-muted">
+
+                 {{ $workhour->stats_overtime ? 'Yes' : 'No' }}
+
+            </p>
+            </div>
+            <div class="mt-3">
               <label class="tx-11 fw-bolder mb-0 text-uppercase">Over Time</label>
               <p class="text-muted">
 
                  {{ $workhour->daily_overtime  }}
+
+            </p>
+            </div>
+            <div class="mt-3">
+              <label class="tx-11 fw-bolder mb-0 text-uppercase">Stats Over Time</label>
+              <p class="text-muted">
+
+                 {{ $workhour->stats_overtime_hours  }}
 
             </p>
             </div>
