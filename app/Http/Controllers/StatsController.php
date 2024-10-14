@@ -57,11 +57,9 @@ class StatsController extends Controller
             $hoursWorked = intdiv($totalMinutesWorked, 60);
             $minutesWorked = $totalMinutesWorked % 60;
 
-            // Initialize variables for standard hours and overtime
             $dailyOvertimeHours = 0;
             $dailyOvertimeMinutes = 0;
 
-            // If the total worked time exceeds 8 hours (including minutes), calculate overtime
             if ($hoursWorked > 8 || ($hoursWorked == 8 && $minutesWorked > 0)) {
                 // Set standard hours to 8 hours and calculate overtime
                 $standardHours = '08:00:00';
