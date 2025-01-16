@@ -60,8 +60,8 @@ public function save_import_workhour(Request $request)
 
         $overworkedEntries = [];
 
-        foreach ($request->date as $index => $date) {
-            $employeeId = $request->employee_id;
+        foreach ($request->employee_id as $index => $employeeId) {
+            // $employeeId = $request->employee_id;
 
             $checkIn = new \DateTime($request->date[$index] . ' ' . $request->check_in_time[$index]);
             $checkOut = new \DateTime($request->date[$index] . ' ' . $request->check_out_time[$index]);
@@ -127,7 +127,7 @@ public function save_import_workhour(Request $request)
             $workhour = new Workhour();
             $workhour->employee_id = $employeeId;
             $workhour->client_id = $request->client_id;
-            $workhour->labour_id = $request->labour_id;
+            $workhour->labour_id = $request->labour_id[$index];
             $workhour->work_date = $request->date[$index];
             $workhour->start_time = $request->check_in_time[$index];
             $workhour->end_time = $request->check_out_time[$index];
@@ -164,7 +164,6 @@ public function save_import_workhour(Request $request)
     }
 
 
-
     public function searchClients(Request $request)
     {
         $search = $request->get('query');
@@ -175,7 +174,9 @@ public function save_import_workhour(Request $request)
     public function searchEmployees(Request $request)
     {
         $search = $request->get('query');
-        $employees = Employee::where('name', 'like', '%' . $search . '%')->get();
+        $employees = Employee::where('name', 'like', '%' . $search . '%')
+        ->orWhere('emp_id', 'like', '%' . $search . '%')
+        ->get();
         return response()->json($employees);
     }
 

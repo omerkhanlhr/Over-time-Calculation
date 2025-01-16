@@ -17,39 +17,33 @@
 
                         <div id="employeeContainer">
                             <div class="employee-group">
-                                <div class="form-group mb-3 mt-3">
-                                    <label for="employee_search">Select Employee</label>
-                                    <input type="text" name="employee_search" class="form-control employee_search" placeholder="Search Employee" required>
-                                    <input type="hidden" name="employee_id" class="employee_id">
-                                    <div class="employee_list"></div>
+                                <div class="row">
+                                    <div class="form-group col-md-6">
+                                        <label for="employee_search">Select Employee</label>
+                                        <input type="text" name="employee_search" class="form-control employee_search" placeholder="Search Employee" required>
+                                        <input type="hidden" name="employee_id[]" class="employee_id">
+                                        <div class="employee_list"></div>
+                                    </div>
+                                    <div class="form-group col-md-6">
+                                        <label for="labour_id">Select Labour Type</label>
+                                        <select name="labour_id[]" id="labour_id" class="form-select" required>
+                                            <option value="" disabled selected>Select Labour Type</option>
+                                            @foreach($labours as $labour)
+                                                <option value="{{ $labour->id }}">{{ $labour->name }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
                                 </div>
-                                <div class="form-group mb-3 mt-3">
-                                    <label for="labour_id">Select Labour Type</label>
-                                    <select name="labour_id" id="labour_id" class="form-select" required>
-                                        <option value="" disabled selected>Select Labour Type</option>
-                                        @foreach($labours as $labour)
-                                            <option value="{{ $labour->id }}">{{ $labour->name }}</option>
-                                        @endforeach
-                                    </select>
-                                </div>
+                                <div class="row">
 
-                                <div class="form-group mb-3 mt-3">
+                                <div class="form-group mt-4 col-md-4">
                                     <label for="date">Date</label>
                                     <input type="date" name="date[]" class="form-control date-input" required>
                                     <span class="text-danger date-error">
                                         @error('date') {{ $message }} @enderror
                                     </span>
                                 </div>
-
-                                <div class="form-group mb-3">
-                                    <label for="rate">Per Hour Wage Rate</label>
-                                    <input type="number" name="rate[]" class="form-control rate-input" step="0.01" min="0" required>
-                                    <span class="text-danger">
-                                        @error('rate') {{$message}} @enderror
-                                    </span>
-                                </div>
-
-                                <div class="form-group mb-3">
+                                <div class="form-group mt-4 col-md-4">
                                     <label for="check_in_time">Check In Time</label>
                                     <input type="time" name="check_in_time[]" class="form-control check-in-time-input" required>
                                     <span class="text-danger">
@@ -57,21 +51,36 @@
                                     </span>
                                 </div>
 
-                                <div class="form-group mb-3">
+                                <div class="form-group mt-4 col-md-4">
+
                                     <label for="check_out_time">Check Out Time</label>
                                     <input type="time" name="check_out_time[]" class="form-control check-out-time-input" required>
                                     <span class="text-danger">
                                         @error('check_out_time') {{$message}} @enderror
                                     </span>
                                 </div>
-
-                                <div class="form-group mb-3">
-                                    <label for="break_time">Break Time (minutes)</label>
-                                    <input type="number" name="break_time[]" class="form-control break-time-input" step="1" min="0" required>
-                                    <span class="text-danger">
-                                        @error('break_time') {{$message}} @enderror
-                                    </span>
                                 </div>
+                                <div class="row">
+                                    <div class="form-group mt-4 col-md-6">
+                                        <label for="rate">Per Hour Wage Rate</label>
+                                        <input type="number" name="rate[]" class="form-control rate-input" step="0.01" min="0" required>
+                                        <span class="text-danger">
+                                            @error('rate') {{$message}} @enderror
+                                        </span>
+                                    </div>
+
+
+                                    <div class="form-group mt-4 col-md-6">
+                                        <label for="break_time">Break Time (minutes)</label>
+                                        <input type="number" name="break_time[]" class="form-control break-time-input" step="1" min="0" required>
+                                        <span class="text-danger">
+                                            @error('break_time') {{$message}} @enderror
+                                        </span>
+                                    </div>
+
+                                </div>
+
+
 
                             </div>
                         </div>
@@ -171,81 +180,102 @@ $(document).ready(function () {
         });
     }
 
-    function checkDuplicateDates() {
-        var dates = [];
-        var duplicate = false;
+    // function checkDuplicateDates() {
+    //     var dates = [];
+    //     var duplicate = false;
 
-        $('.date-input').each(function () {
-            var date = $(this).val();
-            if (date) {
-                if (dates.includes(date)) {
-                    duplicate = true;
-                    return false;
-                }
-                dates.push(date);
-            }
-        });
+    //     $('.date-input').each(function () {
+    //         var date = $(this).val();
+    //         if (date) {
+    //             if (dates.includes(date)) {
+    //                 duplicate = true;
+    //                 return false;
+    //             }
+    //             dates.push(date);
+    //         }
+    //     });
 
-        return duplicate;
-    }
+    //     return duplicate;
+    // }
 
-    $(document).on('change', '.date-input', function () {
-        if (checkDuplicateDates()) {
-            $('#error_message').text('You cannot select the same date more than once.');
-            $(this).val('');
-        } else {
-            $('#error_message').text('');
-        }
-    });
+    // $(document).on('change', '.date-input', function () {
+    //     if (checkDuplicateDates()) {
+    //         $('#error_message').text('You cannot select the same date more than once.');
+    //         $(this).val('');
+    //     } else {
+    //         $('#error_message').text('');
+    //     }
+    // });
 
     setEmployeeSearchEvent();
 
     $('.add-row').on('click', function () {
         var newRow = `
             <div class="employee-group">
+<div class="row">
+                                    <div class="form-group mt-4 col-md-6">
+                                        <label for="employee_search">Select Employee</label>
+                                        <input type="text" name="employee_search" class="form-control employee_search" placeholder="Search Employee" required>
+                                        <input type="hidden" name="employee_id[]" class="employee_id">
+                                        <div class="employee_list"></div>
+                                    </div>
+                                    <div class="form-group mt-4 col-md-6">
+                                        <label for="labour_id">Select Labour Type</label>
+                                        <select name="labour_id[]" id="labour_id" class="form-select" required>
+                                            <option value="" disabled selected>Select Labour Type</option>
+                                            @foreach($labours as $labour)
+                                                <option value="{{ $labour->id }}">{{ $labour->name }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="row">
 
-                <div class="form-group mb-3 mt-3">
-                    <label for="date">Date</label>
-                    <input type="date" name="date[]" class="form-control date-input" required>
-                    <span class="text-danger date-error">
-                        @error('date') {{ $message }} @enderror
-                    </span>
-                </div>
+                                <div class="form-group mt-4 col-md-4">
+                                    <label for="date">Date</label>
+                                    <input type="date" name="date[]" class="form-control date-input" required>
+                                    <span class="text-danger date-error">
+                                        @error('date') {{ $message }} @enderror
+                                    </span>
+                                </div>
+                                <div class="form-group mt-4 col-md-4">
+                                    <label for="check_in_time">Check In Time</label>
+                                    <input type="time" name="check_in_time[]" class="form-control check-in-time-input" required>
+                                    <span class="text-danger">
+                                        @error('check_in_time') {{$message}} @enderror
+                                    </span>
+                                </div>
 
-                <div class="form-group mb-3">
-                    <label for="rate">Per Hour Wage Rate</label>
-                    <input type="number" name="rate[]" class="form-control rate-input" step="0.01" min="0" required>
-                    <span class="text-danger">
-                        @error('rate') {{$message}} @enderror
-                    </span>
-                </div>
+                                <div class="form-group mt-4 col-md-4">
 
-                <div class="form-group mb-3">
-                    <label for="check_in_time">Check In Time</label>
-                    <input type="time" name="check_in_time[]" class="form-control check-in-time-input" required>
-                    <span class="text-danger">
-                        @error('check_in_time') {{$message}} @enderror
-                    </span>
-                </div>
+                                    <label for="check_out_time">Check Out Time</label>
+                                    <input type="time" name="check_out_time[]" class="form-control check-out-time-input" required>
+                                    <span class="text-danger">
+                                        @error('check_out_time') {{$message}} @enderror
+                                    </span>
+                                </div>
+                                </div>
+                                <div class="row mb-4">
+                                    <div class="form-group mt-4 col-md-6">
+                                        <label for="rate">Per Hour Wage Rate</label>
+                                        <input type="number" name="rate[]" class="form-control rate-input" step="0.01" min="0" required>
+                                        <span class="text-danger">
+                                            @error('rate') {{$message}} @enderror
+                                        </span>
+                                    </div>
 
-                <div class="form-group mb-3">
-                    <label for="check_out_time">Check Out Time</label>
-                    <input type="time" name="check_out_time[]" class="form-control check-out-time-input" required>
-                    <span class="text-danger">
-                        @error('check_out_time') {{$message}} @enderror
-                    </span>
-                </div>
 
-                <div class="form-group mb-3">
-                    <label for="break_time">Break Time (minutes)</label>
-                    <input type="number" name="break_time[]" class="form-control break-time-input" step="1" min="0" required>
-                    <span class="text-danger">
-                        @error('break_time') {{$message}} @enderror
-                    </span>
-                </div>
+                                    <div class="form-group mt-4 col-md-6">
+                                        <label for="break_time">Break Time (minutes)</label>
+                                        <input type="number" name="break_time[]" class="form-control break-time-input" step="1" min="0" required>
+                                        <span class="text-danger">
+                                            @error('break_time') {{$message}} @enderror
+                                        </span>
+                                    </div>
 
-                <button type="button" class="btn btn-danger remove-row">Remove Row</button>
-                <hr>
+                                </div>
+                <button type="button" class="btn btn-danger remove-row">-</button>
+
             </div>
         `;
 
