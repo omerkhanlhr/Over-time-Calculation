@@ -21,6 +21,7 @@
             <th>Sr.No.</th>
             <th>Name</th>
             <th>Email</th>
+            <th>Id</th>
             <th>Action</th>
           </tr>
         </thead>
@@ -34,7 +35,8 @@
     <a href="{{route('single.client',$client->id)}}">{{$client->name}}</a>
             </td>
             <td>{{$client->email}}</td>
-           
+            <td>{{$client->client_id}}</td>
+
             <td>
                 <a href="{{route('edit.client',$client->id)}}" class="btn btn-inverse-warning"><i class="fa fa-edit" style="font-size:24px;color:yellow"></i></a>
                 <a href="{{route('delete.client',$client->id)}}" class="btn btn-inverse-danger" id="delete"><i class="fa fa-trash" style="font-size:24px;color:red"></i></a>

@@ -109,7 +109,7 @@ public function save_import_workhour(Request $request)
                 ->whereBetween('work_date', [now()->startOfWeek(), now()->endOfWeek()])
                 ->sum(DB::raw("TIME_TO_SEC(daily_workhours)")) / 3600;
 
-            // Add the current day's work hours to the existing weekly work hours
+           
             $totalWeeklyWorkhours = $existingWeeklyWorkhours + ($hoursWorked + $minutesWorked / 60);
 
             // Calculate weekly overtime if weekly work hours exceed 40
@@ -118,7 +118,7 @@ public function save_import_workhour(Request $request)
                 $weeklyOvertimeSeconds = ($totalWeeklyWorkhours - 40) * 3600;
             }
 
-            // Calculate total amount (standard + overtime if applicable)
+
             $totalAmount = $hoursWorked > 8
                 ? (8 * $request->rate[$index]) + (1.5 * $request->rate[$index] * $dailyOvertimeHours)
                 : $hoursWorked * $request->rate[$index];
@@ -136,24 +136,34 @@ public function save_import_workhour(Request $request)
                     // Convert total minutes back to hours and minutes
                     $hoursWorked = intdiv($totalMinutesWorked, 60);
                     $minutesWorked = $totalMinutesWorked % 60;
-
                     // Set daily work hours in 'HH:MM:SS' format
-                    $workhour = new Workhour();
-                    $dailyWorkHours = sprintf('%02d:%02d:00', $hoursWorked, $minutesWorked);
-                    $workhour->employee_id = $employeeId;
-                    $workhour->client_id = $request->client_id;
-                    $workhour->labour_id = $request->labour_id[$index];
-                    $workhour->work_date = $request->date[$index];
-                    $workhour->daily_workhours = sprintf('%02d:%02d', $hoursWorked, $minutesWorked);
-                    $workhour->break_time = $breakTimeMinutes; // Store break time in minutes
-                    $workhour->rate = $request->rate[$index];
-                    $workhour->total_amount = $totalAmount;
-                    $workhour->save();
+                    $dailyOvertimeHours = 0;
+                    $dailyOvertimeMinutes = 0;
+
+                    if ($hoursWorked > 8 || ($hoursWorked == 8 && $minutesWorked > 0)) {
+                        // Set standard hours to 8 hours and calculate overtime
+                        $standardHours = '08:00:00';
+
+                        // Calculate overtime minutes (if worked more than 8 hours)
+                        $overtimeMinutes = ($hoursWorked * 60 + $minutesWorked) - (8 * 60);
+                        $dailyOvertimeHours = intdiv($overtimeMinutes, 60);
+                        $dailyOvertimeMinutes = $overtimeMinutes % 60;
+
+                        $overtime = 1;
+                    } else {
+                        // If worked 8 hours or less, no overtime
+                        $standardHours = sprintf('%02d:%02d', $hoursWorked, $minutesWorked);
+                        $overtime = 0;
+                    }
+
+
                 }
-                else
-                {
+
                 $workhour = new Workhour();
 
+            $workhour->employee_id = $employeeId;
+            $workhour->hours = $hoursWorked;
+            $workhour->minutes = $minutesWorked;
             $workhour->employee_id = $employeeId;
             $workhour->client_id = $request->client_id;
             $workhour->labour_id = $request->labour_id[$index];
@@ -176,7 +186,7 @@ public function save_import_workhour(Request $request)
                     'employee_id' => $employeeId,
                     'date' => $request->date[$index],
                 ];
-            }
+
         }
 
         $notificationMessage = 'Work Hours Added Successfully';
@@ -196,7 +206,9 @@ public function save_import_workhour(Request $request)
     public function searchClients(Request $request)
     {
         $search = $request->get('query');
-        $clients = Client::where('name', 'like', '%' . $search . '%')->get();
+        $clients = Client::where('name', 'like', '%' . $search . '%')
+        ->orWhere('client_id', 'like', '%' . $search . '%')
+        ->get();
         return response()->json($clients);
     }
 

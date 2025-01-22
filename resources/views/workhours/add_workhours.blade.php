@@ -71,7 +71,7 @@
                                         </select>
                                     </div>
 
-                                    <div class="form-group mt-4 col-md-4">
+                                    <div class="form-group mt-4 col-md-6">
                                         <label for="check_in_time">Minutes</label>
                                         <select name="minutes[]" id="client_id" class="form-select">
                                             <option value=""  selected>Select Minutes</option>
@@ -322,7 +322,7 @@ $(document).ready(function () {
                                         </select>
                                     </div>
 
-                                    <div class="form-group mt-4 col-md-4">
+                                    <div class="form-group mt-4 col-md-6">
                                         <label for="check_in_time">Minutes</label>
                                         <select name="minutes[]" id="client_id" class="form-select">
                                             <option value=""  selected>Select Minutes</option>
@@ -366,8 +366,8 @@ $(document).ready(function () {
         var latestRow = $employeeContainer.children('.employee-group').last().prev();
         if (latestRow.length > 0) {
             var latestRate = latestRow.find('.rate-input').val();
-            var latestCheckInTime = latestRow.find('.check-in-time-input').val();
-            var latestCheckOutTime = latestRow.find('.check-out-time-input').val();
+      //      var latestCheckInTime = latestRow.find('.check-in-time-input').val();
+        //    var latestCheckOutTime = latestRow.find('.check-out-time-input').val();
             var latestBreakTime = latestRow.find('.break-time-input').val();
 
             $employeeContainer.find('.employee-group').last().find('.rate-input').val(latestRate);

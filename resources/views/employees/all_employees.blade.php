@@ -4,11 +4,11 @@
 
      <nav class="page-breadcrumb">
         <ol class="breadcrumb">
-            <a href="{{route('add.employee')}}" class="btn btn-inverse-info">Add Employee</a>
+            <a href="{{route('add.employee')}}" class="btn btn-primary">Add Employee</a>
             &nbsp;&nbsp;&nbsp;&nbsp;
-          <a href="{{route('export.employee')}}" class="btn btn-success">Export Employees</a>
+          {{-- <a href="{{route('export.employee')}}" class="btn btn-success">Export Employees</a>
           &nbsp;&nbsp;&nbsp;&nbsp;
-          <a href="{{route('import.employee')}}" class="btn btn-success">Import Employees</a>
+          <a href="{{route('import.employee')}}" class="btn btn-success">Import Employees</a> --}}
         </ol>
     </nav>
 
@@ -25,22 +25,24 @@
             <th>Sr.No.</th>
             <th>Name</th>
             <th>Email</th>
+            <th>Id</th>
             <th>Phone</th>
             <th>Actions</th>
           </tr>
         </thead>
         <tbody>
-            @foreach ($employees as $employee )
+            @foreach ($employees as $key=>$employee )
 
 
           <tr>
             <td>
             <a href="{{route('single.employee', $employee->id)}}">
-                {{ $employee->id}}
+                {{ $key+1}}
             </a>
             </td>
             <td>{{$employee->name}}</td>
             <td>{{$employee->email}}</td>
+            <td>{{$employee->emp_id}}</td>
             <td>{{$employee->phone}}</td>
             <td>
                 <a href="{{route('edit.employee',$employee->id)}}" class="btn btn-inverse-warning"><i class="fa fa-edit" style="font-size:24px;color:yellow"></i></a>
