@@ -45,7 +45,7 @@
                                 </div>
                                 <div class="form-group mt-4 col-md-4">
                                     <label for="check_in_time">Check In Time</label>
-                                    <input type="time" name="check_in_time[]" class="form-control check-in-time-input" required>
+                                    <input type="time" name="check_in_time[]" class="form-control check-in-time-input" >
                                     <span class="text-danger">
                                         @error('check_in_time') {{$message}} @enderror
                                     </span>
@@ -54,11 +54,32 @@
                                 <div class="form-group mt-4 col-md-4">
 
                                     <label for="check_out_time">Check Out Time</label>
-                                    <input type="time" name="check_out_time[]" class="form-control check-out-time-input" required>
+                                    <input type="time" name="check_out_time[]" class="form-control check-out-time-input">
                                     <span class="text-danger">
                                         @error('check_out_time') {{$message}} @enderror
                                     </span>
                                 </div>
+                                </div>
+                                <div class="row">
+                                    <div class="form-group mt-4 col-md-6">
+                                        <label for="check_in_time">Hours</label>
+                                        <select name="hours[]" id="client_id" class="form-select">
+                                            <option value="" disabled selected>Select Hours</option>
+                                            @for ($i = 0; $i <= 23; $i++)
+                                                <option value="{{ str_pad($i, 2, '0', STR_PAD_LEFT) }}">{{ str_pad($i, 2, '0', STR_PAD_LEFT) }}</option>
+                                            @endfor
+                                        </select>
+                                    </div>
+
+                                    <div class="form-group mt-4 col-md-4">
+                                        <label for="check_in_time">Minutes</label>
+                                        <select name="minutes[]" id="client_id" class="form-select">
+                                            <option value="" disabled selected>Select Minutes</option>
+                                            @for ($i = 0; $i <= 59; $i++)
+                                                <option value="{{ str_pad($i, 2, '0', STR_PAD_LEFT) }}">{{ str_pad($i, 2, '0', STR_PAD_LEFT) }}</option>
+                                            @endfor
+                                        </select>
+                                    </div>
                                 </div>
                                 <div class="row">
                                     <div class="form-group mt-4 col-md-6">
@@ -207,6 +228,39 @@ $(document).ready(function () {
     //     }
     // });
 
+    $(document).ready(function () {
+    function validateTimes() {
+        let isValid = true;
+        $('#error_message').text(''); // Clear error message
+        $('.employee-group').each(function (index, group) {
+            const checkInTime = $(group).find('.check-in-time-input').val();
+            const checkOutTime = $(group).find('.check-out-time-input').val();
+            const hours = $(group).find('select[name="hours[]"]').val();
+            const minutes = $(group).find('select[name="minutes[]"]').val();
+
+            if ((checkInTime || checkOutTime) && (hours || minutes)) {
+                $('#error_message').text('You can select either check-in/out times or hours/minutes, not both.');
+                isValid = false;
+                return false; // Break the loop
+            }
+        });
+        return isValid;
+    }
+
+    // Validate on form submission
+    $('form').on('submit', function (e) {
+        if (!validateTimes()) {
+            e.preventDefault(); // Prevent form submission
+        }
+    });
+
+    // Validate on input change
+    $(document).on('change', '.check-in-time-input, .check-out-time-input, select[name="hours[]"], select[name="minutes[]"]', function () {
+        validateTimes();
+    });
+});
+
+
     setEmployeeSearchEvent();
 
     $('.add-row').on('click', function () {
@@ -240,7 +294,7 @@ $(document).ready(function () {
                                 </div>
                                 <div class="form-group mt-4 col-md-4">
                                     <label for="check_in_time">Check In Time</label>
-                                    <input type="time" name="check_in_time[]" class="form-control check-in-time-input" required>
+                                    <input type="time" name="check_in_time[]" class="form-control check-in-time-input" >
                                     <span class="text-danger">
                                         @error('check_in_time') {{$message}} @enderror
                                     </span>
@@ -249,11 +303,33 @@ $(document).ready(function () {
                                 <div class="form-group mt-4 col-md-4">
 
                                     <label for="check_out_time">Check Out Time</label>
-                                    <input type="time" name="check_out_time[]" class="form-control check-out-time-input" required>
+                                    <input type="time" name="check_out_time[]" class="form-control check-out-time-input" >
                                     <span class="text-danger">
                                         @error('check_out_time') {{$message}} @enderror
                                     </span>
                                 </div>
+                                </div>
+                                    <div class="row">
+                                    <div class="form-group mt-4 col-md-6">
+                                        <label for="check_in_time">Hours</label>
+                                        <select name="hours[]" id="client_id" class="form-select">
+                                            <option value="" disabled selected>Select Hours</option>
+                                                @for ($i = 0; $i <= 23; $i++)
+                                                <option value="{{ str_pad($i, 2, '0', STR_PAD_LEFT) }}">{{ str_pad($i, 2, '0', STR_PAD_LEFT) }}</option>
+                                            @endfor
+                                        </select>
+                                    </div>
+
+                                    <div class="form-group mt-4 col-md-4">
+                                        <label for="check_in_time">Minutes</label>
+                                        <select name="minutes[]" id="client_id" class="form-select">
+                                            <option value="" disabled selected>Select Minutes</option>
+                                            @for ($i = 0; $i <= 59; $i++)
+                                                <option value="{{ str_pad($i, 2, '0', STR_PAD_LEFT) }}">{{ str_pad($i, 2, '0', STR_PAD_LEFT) }}</option>
+                                            @endfor
+                                        </select>
+                                    </div>
+
                                 </div>
                                 <div class="row mb-4">
                                     <div class="form-group mt-4 col-md-6">

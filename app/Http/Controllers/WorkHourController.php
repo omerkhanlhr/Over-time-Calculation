@@ -53,8 +53,8 @@ public function save_import_workhour(Request $request)
             'labour_id' => 'required|exists:labours,id',
             'date.*' => 'required|date',
             'rate.*' => 'required|numeric|min:0',
-            'check_in_time.*' => 'required|date_format:H:i',
-            'check_out_time.*' => 'required|date_format:H:i',
+            // 'check_in_time.*' => 'required|date_format:H:i',
+            // 'check_out_time.*' => 'required|date_format:H:i',
             'break_time.*' => 'nullable|integer|min:0', // Validate break time in minutes
         ]);
 
@@ -123,8 +123,37 @@ public function save_import_workhour(Request $request)
                 ? (8 * $request->rate[$index]) + (1.5 * $request->rate[$index] * $dailyOvertimeHours)
                 : $hoursWorked * $request->rate[$index];
 
-            // Store the work hours in the database
-            $workhour = new Workhour();
+                $hoursField = $request->hours[$index] ?? null;
+                $minutesField = $request->minutes[$index] ?? null;
+
+                if (!is_null($hoursField) && !is_null($minutesField)) {
+                    // Calculate total minutes worked
+                    $totalMinutesWorked = ($hoursField * 60) + $minutesField - $breakTimeMinutes;
+
+                    // Ensure that total minutes worked is not negative
+                    $totalMinutesWorked = max(0, $totalMinutesWorked);
+
+                    // Convert total minutes back to hours and minutes
+                    $hoursWorked = intdiv($totalMinutesWorked, 60);
+                    $minutesWorked = $totalMinutesWorked % 60;
+
+                    // Set daily work hours in 'HH:MM:SS' format
+                    $workhour = new Workhour();
+                    $dailyWorkHours = sprintf('%02d:%02d:00', $hoursWorked, $minutesWorked);
+                    $workhour->employee_id = $employeeId;
+                    $workhour->client_id = $request->client_id;
+                    $workhour->labour_id = $request->labour_id[$index];
+                    $workhour->work_date = $request->date[$index];
+                    $workhour->daily_workhours = sprintf('%02d:%02d', $hoursWorked, $minutesWorked);
+                    $workhour->break_time = $breakTimeMinutes; // Store break time in minutes
+                    $workhour->rate = $request->rate[$index];
+                    $workhour->total_amount = $totalAmount;
+                    $workhour->save();
+                }
+                else
+                {
+                $workhour = new Workhour();
+
             $workhour->employee_id = $employeeId;
             $workhour->client_id = $request->client_id;
             $workhour->labour_id = $request->labour_id[$index];
@@ -141,7 +170,7 @@ public function save_import_workhour(Request $request)
             $workhour->standard_hours = $standardHours;
             $workhour->total_amount = $totalAmount;
             $workhour->save();
-
+}
             if ($hoursWorked >= 12 || ($hoursWorked == 12 && $minutesWorked > 0)) {
                 $overworkedEntries[] = [
                     'employee_id' => $employeeId,
