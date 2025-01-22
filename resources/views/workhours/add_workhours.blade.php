@@ -64,7 +64,7 @@
                                     <div class="form-group mt-4 col-md-6">
                                         <label for="check_in_time">Hours</label>
                                         <select name="hours[]" id="client_id" class="form-select">
-                                            <option value="" disabled selected>Select Hours</option>
+                                            <option value=""  selected>Select Hours</option>
                                             @for ($i = 0; $i <= 23; $i++)
                                                 <option value="{{ str_pad($i, 2, '0', STR_PAD_LEFT) }}">{{ str_pad($i, 2, '0', STR_PAD_LEFT) }}</option>
                                             @endfor
@@ -74,7 +74,7 @@
                                     <div class="form-group mt-4 col-md-4">
                                         <label for="check_in_time">Minutes</label>
                                         <select name="minutes[]" id="client_id" class="form-select">
-                                            <option value="" disabled selected>Select Minutes</option>
+                                            <option value=""  selected>Select Minutes</option>
                                             @for ($i = 0; $i <= 59; $i++)
                                                 <option value="{{ str_pad($i, 2, '0', STR_PAD_LEFT) }}">{{ str_pad($i, 2, '0', STR_PAD_LEFT) }}</option>
                                             @endfor
@@ -228,6 +228,11 @@ $(document).ready(function () {
     //     }
     // });
 
+
+
+
+    setEmployeeSearchEvent();
+
     $(document).ready(function () {
     function validateTimes() {
         let isValid = true;
@@ -259,9 +264,6 @@ $(document).ready(function () {
         validateTimes();
     });
 });
-
-
-    setEmployeeSearchEvent();
 
     $('.add-row').on('click', function () {
         var newRow = `
@@ -313,7 +315,7 @@ $(document).ready(function () {
                                     <div class="form-group mt-4 col-md-6">
                                         <label for="check_in_time">Hours</label>
                                         <select name="hours[]" id="client_id" class="form-select">
-                                            <option value="" disabled selected>Select Hours</option>
+                                            <option value=""  selected>Select Hours</option>
                                                 @for ($i = 0; $i <= 23; $i++)
                                                 <option value="{{ str_pad($i, 2, '0', STR_PAD_LEFT) }}">{{ str_pad($i, 2, '0', STR_PAD_LEFT) }}</option>
                                             @endfor
@@ -323,7 +325,7 @@ $(document).ready(function () {
                                     <div class="form-group mt-4 col-md-4">
                                         <label for="check_in_time">Minutes</label>
                                         <select name="minutes[]" id="client_id" class="form-select">
-                                            <option value="" disabled selected>Select Minutes</option>
+                                            <option value=""  selected>Select Minutes</option>
                                             @for ($i = 0; $i <= 59; $i++)
                                                 <option value="{{ str_pad($i, 2, '0', STR_PAD_LEFT) }}">{{ str_pad($i, 2, '0', STR_PAD_LEFT) }}</option>
                                             @endfor
