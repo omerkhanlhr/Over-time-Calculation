@@ -31,6 +31,17 @@ public function save_import_workhour(Request $request)
         return redirect()->back()->with($notification);
     }
 
+    public function store_employee_forecast(Request $request)
+    {
+        dd($request->all());
+    }
+
+    public function employee_forecast()
+    {
+
+        return view('workhours.employees_forecasting');
+    }
+
     public function create_workhour()
     {
         $labours = Labour::all();
@@ -109,7 +120,7 @@ public function save_import_workhour(Request $request)
                 ->whereBetween('work_date', [now()->startOfWeek(), now()->endOfWeek()])
                 ->sum(DB::raw("TIME_TO_SEC(daily_workhours)")) / 3600;
 
-           
+
             $totalWeeklyWorkhours = $existingWeeklyWorkhours + ($hoursWorked + $minutesWorked / 60);
 
             // Calculate weekly overtime if weekly work hours exceed 40

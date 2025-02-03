@@ -79,6 +79,8 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
 Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::controller(WorkHourController::class)->group(function () {
         Route::get('/import/workhour',  'import_workhour')->name('import.workhour');
+        Route::get('/EmployeeForecast',  'employee_forecast')->name('employee.forecast');
+        Route::post('/EmployeeForecast',  'store_employee_forecast')->name('store.forecasting.employees');
         Route::post('/import/workhour/data',  'save_import_workhour')->name('save.import.workhour');
         Route::get('add-work-hours', 'create_workhour')->name('add.work.hours');
         Route::get('calculate-overtime/{id}', 'calculate_overtime')->name('calculate.overtime');
