@@ -79,6 +79,9 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
 Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::controller(WorkHourController::class)->group(function () {
         Route::get('/import/workhour',  'import_workhour')->name('import.workhour');
+        Route::get('/fetch-assigned-employees',  'fetchAssignedEmployees')->name('fetch.assigned.employees');
+        Route::post('/store/ForeCastingWorkhour',  'store_forecasting_workhour')->name('store.forecasting.workhour');
+        Route::get('/details/ForeCastingWorkhour',  'employee_forecasting_workhour')->name('details.forecasting.workhour');
         Route::get('/EmployeeForecast',  'employee_forecast')->name('employee.forecast');
         Route::post('/EmployeeForecast',  'store_employee_forecast')->name('store.forecasting.employees');
         Route::post('/import/workhour/data',  'save_import_workhour')->name('save.import.workhour');
