@@ -14,7 +14,7 @@
 .authlogin-side-wrapper{
     width:100%;
     height:100%;
-    background-image:url({{ asset('images/login.png')}});
+    background-image:url({{ asset('public/images/login.png')}});
 }
 </style>
   <!-- Fonts -->
@@ -24,22 +24,22 @@
   <!-- End fonts -->
 
 	<!-- core:css -->
-	<link rel="stylesheet" href="{{asset('backend/assets/vendors/core/core.css')}}">
+	<link rel="stylesheet" href="{{asset('public/backend/assets/vendors/core/core.css')}}">
 	<!-- endinject -->
 
 	<!-- Plugin css for this page -->
 	<!-- End plugin css for this page -->
 
 	<!-- inject:css -->
-	<link rel="stylesheet" href="{{asset('backend/assets/fonts/feather-font/css/iconfont.css')}}">
-	<link rel="stylesheet" href="{{asset('backend/assets/vendors/flag-icon-css/css/flag-icon.min.css')}}">
+	<link rel="stylesheet" href="{{asset('public/backend/assets/fonts/feather-font/css/iconfont.css')}}">
+	<link rel="stylesheet" href="{{asset('public/backend/assets/vendors/flag-icon-css/css/flag-icon.min.css')}}">
 	<!-- endinject -->
 
   <!-- Layout styles -->
-	<link rel="stylesheet" href="{{asset('backend/assets/css/demo2/style.css')}}">
+	<link rel="stylesheet" href="{{asset('public/backend/assets/css/demo2/style.css')}}">
   <!-- End layout styles -->
 
-  <link rel="shortcut icon" href="{{asset('images/logo.png')}}" />
+  <link rel="shortcut icon" href="{{asset('public/images/logo.png')}}" />
 </head>
 <body>
 	<div class="main-wrapper">
@@ -80,7 +80,7 @@
                           Login
                         </button>
                       </div>
-                      <a href="{{route('password.request')}}" class="d-block mt-3 text-muted">Forgot Password?</a>
+                      <a href="{{route('password.request')}}" class="d-block mt-3 text-muted">Forgot Password</a>
                     </form>
                   </div>
                 </div>

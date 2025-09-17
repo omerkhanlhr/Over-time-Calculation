@@ -18,9 +18,6 @@ class ClientController extends Controller
     {
         $req->validate([
             'name' => 'required',
-            'email' => 'required|email',
-            'company' => 'required',
-            'address' => 'required',
         ]);
 
         $existingEmail = Client::where('email', $req['email'])->first();

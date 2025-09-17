@@ -4,7 +4,7 @@
 <div class="page-content">
     <div class="row profile-body">
       <!-- left wrapper start -->
-      <div class="d-none d-md-block col-md-8 col-xl-8 left-wrapper">
+      <div class="d-none d-md-block col-md-12 col-xl-12 left-wrapper">
         <div class="card rounded">
           <div class="card-body">
             <div class="d-flex align-items-center justify-content-between mb-2">
@@ -27,12 +27,7 @@
             </p>
             </div>
 
-
-          </div>
-        </div>
-      </div>
-          </div>
-          <h5 class="card-title mt-3 mb-3">Work Details</h5>
+<h5 class="card-title mt-3 mb-3">Work Details</h5>
           <div class="table-responsive">
             <table id="dataTableExample" class="table">
               <thead>
@@ -68,6 +63,12 @@
               </tbody>
             </table>
           </div>
+          </div>
+          
+        </div>
+      </div>
+          </div>
+
       <!-- middle wrapper end -->
       <!-- right wrapper start -->
       </div>

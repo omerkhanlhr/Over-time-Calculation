@@ -15,26 +15,26 @@
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;900&display=swap" rel="stylesheet">
   <!-- End fonts -->
 
-  <link rel="stylesheet" href="{{asset('backend/assets/vendors/datatables.net-bs5/dataTables.bootstrap5.css')}}">
+  <link rel="stylesheet" href="{{asset('public/backend/assets/vendors/datatables.net-bs5/dataTables.bootstrap5.css')}}">
 
 	<!-- core:css -->
-	<link rel="stylesheet" href="{{ asset('backend/assets/vendors/core/core.css')}}">
+	<link rel="stylesheet" href="{{ asset('public/backend/assets/vendors/core/core.css')}}">
 	<!-- endinject -->
 
 	<!-- Plugin css for this page -->
-	<link rel="stylesheet" href="{{ asset('backend/assets/vendors/flatpickr/flatpickr.min.css')}}">
+	<link rel="stylesheet" href="{{ asset('public/backend/assets/vendors/flatpickr/flatpickr.min.css')}}">
 	<!-- End plugin css for this page -->
 
 	<!-- inject:css -->
-	<link rel="stylesheet" href="{{ asset('backend/assets/fonts/feather-font/css/iconfont.css')}}">
-	<link rel="stylesheet" href="{{ asset('backend/assets/vendors/flag-icon-css/css/flag-icon.min.css')}}">
+	<link rel="stylesheet" href="{{ asset('public/backend/assets/fonts/feather-font/css/iconfont.css')}}">
+	<link rel="stylesheet" href="{{ asset('public/backend/assets/vendors/flag-icon-css/css/flag-icon.min.css')}}">
 	<!-- endinject -->
 
   <!-- Layout styles -->
-	<link rel="stylesheet" href="{{ asset('backend/assets/css/demo2/style.css')}}">
+	<link rel="stylesheet" href="{{ asset('public/backend/assets/css/demo2/style.css')}}">
   <!-- End layout styles -->
 
-  <link rel="shortcut icon" href="{{ asset('images/logo.png')}}" />
+  <link rel="shortcut icon" href="{{ asset('public/images/logo.png')}}" />
   <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.css" >
 
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
@@ -63,20 +63,20 @@
 	</div>
 
 	<!-- core:js -->
-	<script src="{{ asset('backend/assets/vendors/core/core.js')}}"></script>
+	<script src="{{ asset('public/backend/assets/vendors/core/core.js')}}"></script>
 	<!-- endinject -->
 
 	<!-- Plugin js for this page -->
-  <script src="{{ asset('backend/assets/vendors/flatpickr/flatpickr.min.js')}}"></script>
+  <script src="{{ asset('public/backend/assets/vendors/flatpickr/flatpickr.min.js')}}"></script>
 	<!-- End plugin js for this page -->
 
 	<!-- inject:js -->
-	<script src="{{ asset('backend/assets/vendors/feather-icons/feather.min.js')}}"></script>
-	<script src="{{ asset('backend/assets/js/template.js')}}"></script>
+	<script src="{{ asset('public/backend/assets/vendors/feather-icons/feather.min.js')}}"></script>
+	<script src="{{ asset('public/backend/assets/js/template.js')}}"></script>
 	<!-- endinject -->
 
 	<!-- Custom js for this page -->
-  <script src="{{ asset('backend/assets/js/dashboard-dark.js')}}"></script>
+  <script src="{{ asset('public/backend/assets/js/dashboard-dark.js')}}"></script>
 	<!-- End custom js for this page -->
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
 
@@ -102,13 +102,13 @@
  }
  @endif
 </script>
-<script src="{{asset('backend/assets/vendors/datatables.net/jquery.dataTables.js')}}"></script>
-  <script src="{{asset('backend/assets/vendors/datatables.net-bs5/dataTables.bootstrap5.js')}}"></script>
-  <script src="{{asset('backend/assets/js/data-table.js')}}"></script>
+<script src="{{asset('public/backend/assets/vendors/datatables.net/jquery.dataTables.js')}}"></script>
+  <script src="{{asset('public/backend/assets/vendors/datatables.net-bs5/dataTables.bootstrap5.js')}}"></script>
+  <script src="{{asset('public/backend/assets/js/data-table.js')}}"></script>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
-  <script src="{{ asset('backend/assets/js/code/code.js')}}"></script>
-  <script src="{{ asset('backend/assets/js/code/validate.min.js')}}"></script>
-<script src="{{ asset('js/inactivity.js') }}"></script>
+  <script src="{{ asset('public/backend/assets/js/code/code.js')}}"></script>
+  <script src="{{ asset('public/backend/assets/js/code/validate.min.js')}}"></script>
+<script src="{{ asset('public/js/inactivity.js') }}"></script>
 </body>
 </html>
 

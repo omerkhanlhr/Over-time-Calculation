@@ -4,7 +4,7 @@
 <div class="page-content">
     <div class="row profile-body">
       <!-- left wrapper start -->
-      <div class="d-none d-md-block col-md-8 col-xl-8 left-wrapper">
+      <div class="d-none d-md-block col-md-12 col-xl-12 left-wrapper">
         <div class="card rounded">
           <div class="card-body">
             <div class="d-flex align-items-center justify-content-between mb-2">
@@ -16,19 +16,13 @@
             </div>
             <div class="mt-3">
               <label class="tx-11 fw-bolder mb-0 text-uppercase">Email</label>
-              <p class="text-muted">{{$employee->email}}</p>
+              <p class="text-muted">{{$employee->email ?? 'N/A'}}</p>
             </div>
             <div class="mt-3">
               <label class="tx-11 fw-bolder mb-0 text-uppercase">Phone</label>
-              <p class="text-muted">    {{ $employee->phone}}        </p>
+              <p class="text-muted">    {{ $employee->phone ?? 'N/A'}}        </p>
             </div>
-
-
-          </div>
-        </div>
-      </div>
-          </div>
-<h5 class="card-title mt-3 mb-3">Work Details</h5>
+            <h5 class="card-title mt-3 mb-3">Work Details</h5>
       <div class="table-responsive">
         <table id="dataTableExample" class="table">
           <thead>
@@ -64,6 +58,13 @@
         </table>
       </div>
 
+
+
+
+          </div>
+        </div>
+      </div>
+          </div>
 
       </div>
       <!-- right wrapper end -->

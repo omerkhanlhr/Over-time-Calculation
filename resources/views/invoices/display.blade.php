@@ -29,10 +29,10 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @foreach ($invoices as $invoice)
+                                    @foreach ($invoices as $key=> $invoice)
                                         <tr>
                                             <td>
-                                                <a href="{{ route('show.invoice',$invoice->id) }}">{{$invoice->id}}</a>
+                                                <a href="{{ route('show.invoice',$invoice->id) }}">{{ $key+1 }}</a>
                                             </td>
                                             <td>{{ $invoice->client->name }}</td>
                                             <td>{{ \Carbon\Carbon::parse($invoice->from_date)->format('M d') }} - {{ \Carbon\Carbon::parse($invoice->to_date)->format('M d') }}</td>

@@ -106,10 +106,10 @@
             </div>
         </div>
         <div class="client-details">
-            <p>Bill To: <strong>{{ $invoice->client->company }}</strong></p>
-            <p>Ship To:<strong >Fleet Optics Inc</strong></p>
+            <p>Bill To: <strong>{{ $invoice->client->name }}</strong></p>
+            <!--<p>Ship To:<strong >Fleet Optics Inc</strong></p>-->
         </div>
-        <table class="invoice-items">
+        <table class="invoice-items" style="margin-top:100px">
             <thead>
                 <tr>
                     <th>Item</th>
@@ -126,13 +126,21 @@
                     <td>CA${{ number_format($data['rate'], 2) }}</td>
                     <td>CA${{ number_format($data['subtotal'], 2) }}</td>
                 </tr>
-
-                @if($data['total_overtime'] > 0)
+ @if($data['total_overtime'] > 0)
                     <tr>
-                        <td><strong>{{\Carbon\Carbon::parse($date)->format('M d') }} - ({{ $data['employee_count'] }} Personnel Provided) {{ $data['labor_type'] }}</strong> </td>
+                        <td><strong>{{\Carbon\Carbon::parse($date)->format('M d') }} - ({{ $data['overtime_employees'] }} Personnel Provided) {{ $data['labor_type'] }} -OT</strong> </td>
                         <td>{{ $data['total_overtime'] }}</td>
-                        <td>CA${{ number_format($data['rate'], 2) }}</td>
+                        <td>CA${{ number_format($data['overtime_rate'], 2) }}</td>
                         <td>CA${{ number_format($data['total_overtime_amount'], 2) }}</td>
+                    </tr>
+                @endif
+            
+                    @if ($data['statsHours'] > 0)
+                    <tr>
+                    <td><strong>{{\Carbon\Carbon::parse($date)->format('M d') }} - ({{ $data['stats_employees'] }} Personnel Provided) {{ $data['labor_type'] }} -Stat</strong> </td>
+                        <td> {{ $data['statsHours'] }} </td>
+                        <td> CA${{ number_format($data['stats_rate'], 2) }}</td>
+                        <td> CA${{ number_format($data['total_stat_amount'], 2) }}</td>
                     </tr>
                 @endif
                 @endforeach

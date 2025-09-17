@@ -137,7 +137,7 @@
                 </tr>
             </thead>
             <tbody>
-                @foreach ($groupedBreakdowns as $data)
+                @foreach ($sortedBreakdowns as $data)
                     <tr>
                             <td><strong>{{ \Carbon\Carbon::parse($data['work_date'])->format('M d') }} - ({{ $data['employee_count'] }} Personnel Provided) {{ $data['labor_type'] }}</strong> </td>
                             <td>{{ $data['total_hours'] }}</td>
@@ -146,10 +146,18 @@
                     </tr>
                 @if ($data['total_overtime'] > 0)
                     <tr>
-                        <td><strong>{{ \Carbon\Carbon::parse($data['work_date'])->format('M d') }}- ({{ $data['employee_count'] }} Personnel Provided) {{ $data['labor_type'] }} - OT</strong></td>
+                        <td><strong>{{ \Carbon\Carbon::parse($data['work_date'])->format('M d') }}- ({{ $data['overtime_employees'] }} Personnel Provided) {{ $data['labor_type'] }} - OT</strong></td>
                         <td> {{ $data['total_overtime'] }} </td>
-                        <td> CA${{ number_format($data['rate'], 2) }}</td>
+                        <td> CA${{ number_format($data['overtime_rate'], 2) }}</td>
                         <td> CA${{ number_format($data['total_overtime_amount'], 2) }}</td>
+                    </tr>
+                @endif
+                @if ($data['statsHours'] > 0)
+                    <tr>
+                        <td><strong>{{ \Carbon\Carbon::parse($data['work_date'])->format('M d') }}- ({{ $data['stats_employees'] }} Personnel Provided) {{ $data['labor_type'] }} - Stat</strong></td>
+                        <td> {{ $data['statsHours'] }} </td>
+                        <td> CA${{ number_format($data['stats_rate'], 2) }}</td>
+                        <td> CA${{ number_format($data['total_stat_amount'], 2) }}</td>
                     </tr>
                 @endif
                 @endforeach

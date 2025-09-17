@@ -32,9 +32,9 @@
           </tr>
         </thead>
         <tbody>
-            @foreach ($workhours as $workhour)
+            @foreach ($workhours as $key=> $workhour)
             <tr>
-                <td>{{ $workhour->id }}</td>
+                <td>{{ $key+1 }}</td>
                 <td>{{ $workhour->client->name }}</td>
                 <td>{{ $workhour->employee->name }}</td>
                 <td>{{ $workhour->rate }}</td>

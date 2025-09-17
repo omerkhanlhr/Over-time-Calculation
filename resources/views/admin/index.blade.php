@@ -147,21 +147,22 @@
           </tr>
         </thead>
         <tbody>
-            @foreach ($invoices as $invoice)
+            @foreach ($invoices as $key=> $invoice)
             @php
             $lateFee = 0;
 
             if (\Carbon\Carbon::now()->gt(\Carbon\Carbon::parse($invoice->due_date))) {
+               
                 $lateFee = $invoice->grand_total * 0.02; // 2% late fee
             }
 
             $finalTotal = $invoice->grand_total + $lateFee;
         @endphp
     <tr>
-        <td><a href="{{route('show.invoice',$invoice->id)}}">{{ $invoice->id }}</a></td>
+        <td><a href="{{route('show.invoice',$invoice->id)}}">{{ $key+1 }}</a></td>
         <td>{{ $invoice->client->name }}</td>
-        <td>{{ $invoice->grand_total }}</td>
-        <td>{{ $finalTotal }}</td>
+        <td>{{ number_format($invoice->grand_total,2) }}</td>
+        <td>{{ number_format($finalTotal,2) }}</td>
         <td>
         @if ($invoice->status==0)
         <span class="badge bg-warning">Pending</span>

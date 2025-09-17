@@ -15,7 +15,7 @@ class Client extends Model
 
     public function workHours()
     {
-        return $this->hasMany(WorkHour::class);
+        return $this->hasMany(Workhour::class);
     }
 
 

@@ -14,7 +14,6 @@
                                 <tr>
                                     <th>Labour Type</th>
                                     <th>Total Hours Worked</th>
-                                    <th>Rate</th>
                                     <th>Total Amount</th>
                                     <th>Actions</th>
                                 </tr>
@@ -29,14 +28,14 @@
                                     <tr>
                                         <td>{{ $laborType }}</td>
                                         <td>{{ $totalHours }}</td>
-                                        <td>${{ number_format($rate, 2) }}</td>
                                         <td>${{ number_format($totalAmount, 2) }}</td>
                                         <td>
                                             <a href="{{ route('invoice.breakdown.preview.pdf', ['invoiceId' => $invoice->id, 'laborType' => $laborType]) }}"
                                                 class="btn btn-primary" target="_blank">View PDF</a>
                                             &nbsp;&nbsp;
-                                            <a href="{{ route('invoice.breakdown.edit', ['invoiceId' => $invoice->id, 'laborType' => $laborType]) }}"
-                                                class="btn btn-warning">Edit</a>
+                                            <a href="{{ route('invoice.breakdown.download.pdf', ['invoiceId' => $invoice->id, 'laborType' => $laborType]) }}"
+                                                class="btn btn-primary" target="_blank">Download PDF</a>
+                                                &nbsp;&nbsp;
                                         </td>
 
 

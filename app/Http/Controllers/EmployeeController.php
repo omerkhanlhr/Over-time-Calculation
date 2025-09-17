@@ -30,8 +30,8 @@ class EmployeeController extends Controller
     {
         $validatedData = $request->validate([
             'employee_name' => 'required|string|max:255',
-            'email' => 'required|email|unique:employees,email',
-            'phone' => 'required|numeric|unique:employees,phone'
+            // 'email' => 'required|email|unique:employees,email',
+            // 'phone' => 'required|numeric|unique:employees,phone'
         ]);
 
         $employee = new Employee();

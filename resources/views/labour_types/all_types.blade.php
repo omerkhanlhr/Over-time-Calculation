@@ -25,11 +25,11 @@
           </tr>
         </thead>
         <tbody>
-            @foreach ($labours as $labour )
+            @foreach ($labours as $key=> $labour )
 
 
           <tr>
-            <td>{{ $labour->id}}</td>
+            <td>{{ $key+1 }}</td>
             <td>{{ $labour->name }}</td>
 
             <td>
