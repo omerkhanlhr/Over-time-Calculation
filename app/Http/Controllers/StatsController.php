@@ -57,11 +57,17 @@ public function store_statshour(Request $request)
             $hoursWorked = intdiv($totalMinutesWorked, 60);
             $minutesWorked = $totalMinutesWorked % 60;
 
+<<<<<<< HEAD
             // Initialize variables for standard hours and overtime
             $dailyOvertimeHours = 0;
             $dailyOvertimeMinutes = 0;
 
             // If the total worked time exceeds 8 hours (including minutes), calculate overtime
+=======
+            $dailyOvertimeHours = 0;
+            $dailyOvertimeMinutes = 0;
+
+>>>>>>> f00aac00c0b8581246a1b112796c1e2853b27609
             if ($hoursWorked > 8 || ($hoursWorked == 8 && $minutesWorked > 0)) {
                 // Set standard hours to 8 hours and calculate overtime
                 $standardHours = '08:00:00';
@@ -106,10 +112,19 @@ public function store_statshour(Request $request)
             $workhour->work_date = $request->date[$index];
             $workhour->start_time = $request->check_in_time[$index];
             $workhour->end_time = $request->check_out_time[$index];
+<<<<<<< HEAD
             $workhour->stats_standard_hours = sprintf('%02d:%02d', $hoursWorked, $minutesWorked);
             $workhour->daily_workhours = sprintf('%02d:%02d', $hoursWorked, $minutesWorked);
             $workhour->rate = $request->rate[$index];
             $workhour->stats=1;
+=======
+            $workhour->stats_standard_hours = $standardHours;
+            $workhour->daily_workhours = sprintf('%02d:%02d', $hoursWorked, $minutesWorked);
+            $workhour->stats_overtime_hours = sprintf('%02d:%02d:%02d', $dailyOvertimeHours, $dailyOvertimeMinutes, 0);
+            $workhour->rate = $request->rate[$index];
+            $workhour->stats=1;
+            $workhour->stats_overtime = $overtime;
+>>>>>>> f00aac00c0b8581246a1b112796c1e2853b27609
             $workhour->break_time = $breakTimeMinutes;
             $workhour->total_amount = $totalAmount;
             $workhour->save();
@@ -152,7 +167,7 @@ public function store_statshour(Request $request)
 
     public function edit($id)
     {
-        $stat = Stats::findOrFail($id);
+        $stat = Workhour::findOrFail($id);
         $clients = Client::all();
         $employees = Employee::all();
         $labours = Labour::all();
@@ -197,6 +212,7 @@ public function store_statshour(Request $request)
         // Determine if overtime is applicable
         $dailyOvertimeHours = 0;
         $dailyOvertimeMinutes = 0;
+<<<<<<< HEAD
         if ($hoursWorked > 8)
         {
             $dailyOvertimeMinutes = ($hoursWorked - 8) * 60 + $minutesWorked;
@@ -230,6 +246,37 @@ public function store_statshour(Request $request)
 
 
 
+=======
+        if ($hoursWorked > 8 || ($hoursWorked == 8 && $minutesWorked > 0)) {
+            // If the employee worked more than 8 hours or 8 hours + extra minutes, calculate overtime
+            $overtimeMinutes = ($hoursWorked * 60 + $minutesWorked) - (8 * 60);
+            $dailyOvertimeHours = intdiv($overtimeMinutes, 60);
+            $dailyOvertimeMinutes = $overtimeMinutes % 60;
+            $standardHours = '08:00:00';
+            $totalAmount = 8 * $request->rate + 1.5 * $request->rate * ($dailyOvertimeHours + $dailyOvertimeMinutes / 60);
+            $overtime = 1;
+        } else {
+            $standardHours = sprintf('%02d:%02d', $hoursWorked, $minutesWorked);
+            $totalAmount = $hoursWorked * $request->rate;
+            $overtime = 0;
+        }
+
+        // Fetch the existing weekly work hours excluding the current record
+        $existingWeeklyWorkhours = Workhour::where('employee_id', $workhour->employee_id)
+            ->whereBetween('work_date', [now()->startOfWeek(), now()->endOfWeek()])
+            ->sum(DB::raw("TIME_TO_SEC(daily_workhours)")) / 3600;
+
+        // Add the current day's work hours to the existing weekly work hours
+        $totalWeeklyWorkhours = $existingWeeklyWorkhours + ($hoursWorked + $minutesWorked / 60);
+
+        // Calculate weekly overtime if weekly work hours exceed 40
+        $weeklyOvertimeSeconds = 0;
+        if ($totalWeeklyWorkhours > 40) {
+            $weeklyOvertimeSeconds = ($totalWeeklyWorkhours - 40) * 3600;
+        }
+
+        // Update the workhour record in the database
+>>>>>>> f00aac00c0b8581246a1b112796c1e2853b27609
         $workhour->employee_id = $request->employee_id;
         $workhour->client_id = $request->client_id;
         $workhour->work_date = $request->date;
@@ -238,8 +285,13 @@ public function store_statshour(Request $request)
         $workhour->daily_workhours = sprintf('%02d:%02d', $hoursWorked, $minutesWorked);
         $workhour->weekly_workhours = $totalWeeklyWorkhours;
         $workhour->break_time = $breakTimeMinutes;
+<<<<<<< HEAD
         $workhour->daily_overtime = sprintf('%02d:%02d', $dailyOvertimeHours, $dailyOvertimeMinutes);
         $workhour->overtime = ($dailyOvertimeHours > 0 || $dailyOvertimeMinutes > 0) ? 1 : 0;
+=======
+        $workhour->daily_overtime = sprintf('%02d:%02d:%02d', $dailyOvertimeHours, $dailyOvertimeMinutes, 0);
+        $workhour->overtime = $overtime; // Set overtime flag
+>>>>>>> f00aac00c0b8581246a1b112796c1e2853b27609
         $workhour->rate = $request->rate;
         $workhour->labour_id = $request->labour_id;
         $workhour->standard_hours = $standardHours;

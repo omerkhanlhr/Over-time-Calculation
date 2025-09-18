@@ -27,26 +27,48 @@ class EmployeeController extends Controller
 
 
     public function store_employee(Request $request)
+<<<<<<< HEAD
     {
         $validatedData = $request->validate([
             'employee_name' => 'required|string|max:255',
             // 'email' => 'required|email|unique:employees,email',
             // 'phone' => 'required|numeric|unique:employees,phone'
         ]);
+=======
+{
+    $validatedData = $request->validate([
+        'employee_name.*' => 'required|string|max:255',
+        'email.*' => 'required|email|unique:employees,email',
+        'phone.*' => 'required|numeric|unique:employees,phone',
+        'front_card.*' => 'image|mimes:jpeg,png,jpg,gif|max:2048',
+        'back_card.*' => 'image|mimes:jpeg,png,jpg,gif|max:2048',
+    ]);
+>>>>>>> f00aac00c0b8581246a1b112796c1e2853b27609
 
+    foreach ($request->employee_name as $index => $name) {
         $employee = new Employee();
-        $employee->name = $request->employee_name;
-        $employee->email = $request->email;
-        $employee->phone = $request->phone;
+        $employee->name = $name;
+        $employee->email = $request->email[$index];
+        $employee->phone = $request->phone[$index];
+        $employee->address = $request->address[$index];
+        $employee->sin = $request->sin[$index];
+        $employee->emp_id = 'ET-';
+
         $employee->save();
 
-        $notification = array(
-            'message' => 'Employee Added Successfully',
-            'alert-type' => 'success',
-        );
-
-        return redirect()->route('all.employee')->with($notification);
+        $employee->update([
+            'emp_id'=> 'ET-'.$employee->id,
+        ]);
     }
+
+    $notification = [
+        'message' => 'Employees Added Successfully',
+        'alert-type' => 'success',
+    ];
+
+    return redirect()->route('all.employee')->with($notification);
+}
+
 
     public function edit_employee($id)
     {

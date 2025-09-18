@@ -37,8 +37,11 @@ class ClientController extends Controller
         $client->email = $req['email'];
         $client->company = $req['company'];
         $client->address = $req['address'];
+        $client->client_id = 'CT-';
         $client->save();
-
+        $client->update([
+            'client_id'=>'CT-'.$client->id,
+        ]);
         $notification = array(
             'message' => 'Client Added Successfully',
             'alert-type' => 'success',

@@ -31,7 +31,11 @@
 	<!-- endinject -->
 
   <!-- Layout styles -->
+<<<<<<< HEAD
 	<link rel="stylesheet" href="{{ asset('public/backend/assets/css/demo2/style.css')}}">
+=======
+	<link rel="stylesheet" href="{{ asset('backend/assets/css/demo1/style.css')}}">
+>>>>>>> f00aac00c0b8581246a1b112796c1e2853b27609
   <!-- End layout styles -->
 
   <link rel="shortcut icon" href="{{ asset('public/images/logo.png')}}" />

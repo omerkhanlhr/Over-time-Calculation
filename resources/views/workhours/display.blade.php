@@ -27,6 +27,7 @@
                                     <th>Work Date</th>
                                     <th>Total Amount</th>
                                     <th>Overtime</th>
+                                    <th>Stats Overtime</th>
                                     <th>Actions</th>
 
           </tr>
@@ -41,6 +42,7 @@
                 <td>{{ $workhour->work_date }}</td>
                 <td>${{ $workhour->total_amount }}</td>
                 <td>{{ $workhour->overtime ? 'Yes' : 'No' }}</td>
+                <td>{{ $workhour->stats_overtime ? 'Yes' : 'No' }}</td>
 
                 <td>
                     <a href="{{route('edit.work.hours',$workhour->id)}}" class="btn btn-inverse-warning"><i class="fa fa-edit" style="font-size:24px;color:yellow"></i></a>

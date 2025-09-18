@@ -36,6 +36,11 @@
                                             <a href="{{ route('invoice.breakdown.download.pdf', ['invoiceId' => $invoice->id, 'laborType' => $laborType]) }}"
                                                 class="btn btn-primary" target="_blank">Download PDF</a>
                                                 &nbsp;&nbsp;
+<<<<<<< HEAD
+=======
+                                            <a href="{{ route('invoice.breakdown.edit', ['invoiceId' => $invoice->id, 'laborType' => $laborType]) }}"
+                                                class="btn btn-warning">Edit</a>
+>>>>>>> f00aac00c0b8581246a1b112796c1e2853b27609
                                         </td>
 
 

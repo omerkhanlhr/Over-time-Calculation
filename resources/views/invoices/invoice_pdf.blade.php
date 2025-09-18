@@ -160,6 +160,17 @@
                         <td> CA${{ number_format($data['total_stat_amount'], 2) }}</td>
                     </tr>
                 @endif
+<<<<<<< HEAD
+=======
+                @if ($data['statsOvertime'] > 0)
+                    <tr>
+                        <td><strong>{{ \Carbon\Carbon::parse($data['work_date'])->format('M d') }}- ({{ $data['stats_overtime_employees'] }} Personnel Provided) {{ $data['labor_type'] }} - Stat -OT</strong></td>
+                        <td> {{ $data['statsOvertime'] }} </td>
+                        <td> CA${{ number_format($data['stats_overtime_rate'], 2) }}</td>
+                        <td> CA${{ number_format($data['total_stat_overtime_amount'], 2) }}</td>
+                    </tr>
+                @endif
+>>>>>>> f00aac00c0b8581246a1b112796c1e2853b27609
                 @endforeach
 
             </tbody>

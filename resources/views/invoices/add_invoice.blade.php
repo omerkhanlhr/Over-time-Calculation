@@ -155,7 +155,14 @@
                 <label>${labor_type.name} Stats Rate</label>
                 <input type="number" name="stats_rates[${labor_type.id}]" class="form-control stats-rate-input" step="0.01" min="0" required>
             </div>
+<<<<<<< HEAD
              
+=======
+             <div class="form-group mb-3 overtime-rate-${labor_type.id}" ">
+                <label>${labor_type.name}Stats Overtime Rate</label>
+                <input type="number" name="stats_overtime_rates[${labor_type.id}]" class="form-control stats-overtime-rate-input" step="0.01" min="0" required>
+            </div>
+>>>>>>> f00aac00c0b8581246a1b112796c1e2853b27609
         `);
                         });
                     },

@@ -27,7 +27,13 @@
             </p>
             </div>
 
+<<<<<<< HEAD
 <h5 class="card-title mt-3 mb-3">Work Details</h5>
+=======
+
+          </div>
+          <h5 class="card-title mt-3 mb-3">Work Details</h5>
+>>>>>>> f00aac00c0b8581246a1b112796c1e2853b27609
           <div class="table-responsive">
             <table id="dataTableExample" class="table">
               <thead>
@@ -63,8 +69,11 @@
               </tbody>
             </table>
           </div>
+<<<<<<< HEAD
           </div>
           
+=======
+>>>>>>> f00aac00c0b8581246a1b112796c1e2853b27609
         </div>
       </div>
           </div>
