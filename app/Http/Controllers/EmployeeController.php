@@ -17,7 +17,7 @@ class EmployeeController extends Controller
     public function all_employees()
     {
         $employees = Employee::all();
-        return view('employees.all_employees',compact('employees'));
+        return view('employees.all_employees', compact('employees'));
     }
     public function single_employee($id)
     {
@@ -27,57 +27,54 @@ class EmployeeController extends Controller
 
 
     public function store_employee(Request $request)
-<<<<<<< HEAD
     {
         $validatedData = $request->validate([
             'employee_name' => 'required|string|max:255',
             // 'email' => 'required|email|unique:employees,email',
             // 'phone' => 'required|numeric|unique:employees,phone'
-        ]);
-=======
-{
-    $validatedData = $request->validate([
-        'employee_name.*' => 'required|string|max:255',
-        'email.*' => 'required|email|unique:employees,email',
-        'phone.*' => 'required|numeric|unique:employees,phone',
-        'front_card.*' => 'image|mimes:jpeg,png,jpg,gif|max:2048',
-        'back_card.*' => 'image|mimes:jpeg,png,jpg,gif|max:2048',
-    ]);
->>>>>>> f00aac00c0b8581246a1b112796c1e2853b27609
+        ]); {
+            $validatedData = $request->validate([
+                'employee_name.*' => 'required|string|max:255',
+                'email.*' => 'required|email|unique:employees,email',
+                'phone.*' => 'required|numeric|unique:employees,phone',
+                'front_card.*' => 'image|mimes:jpeg,png,jpg,gif|max:2048',
+                'back_card.*' => 'image|mimes:jpeg,png,jpg,gif|max:2048',
+            ]);
 
-    foreach ($request->employee_name as $index => $name) {
-        $employee = new Employee();
-        $employee->name = $name;
-        $employee->email = $request->email[$index];
-        $employee->phone = $request->phone[$index];
-        $employee->address = $request->address[$index];
-        $employee->sin = $request->sin[$index];
-        $employee->emp_id = 'ET-';
+            foreach ($request->employee_name as $index => $name) {
+                $employee = new Employee();
+                $employee->name = $name;
+                $employee->email = $request->email[$index];
+                $employee->phone = $request->phone[$index];
+                $employee->address = $request->address[$index];
+                $employee->sin = $request->sin[$index];
+                $employee->emp_id = 'ET-';
 
-        $employee->save();
+                $employee->save();
 
-        $employee->update([
-            'emp_id'=> 'ET-'.$employee->id,
-        ]);
+                $employee->update([
+                    'emp_id' => 'ET-' . $employee->id,
+                ]);
+            }
+
+            $notification = [
+                'message' => 'Employees Added Successfully',
+                'alert-type' => 'success',
+            ];
+
+            return redirect()->route('all.employee')->with($notification);
+        }
     }
-
-    $notification = [
-        'message' => 'Employees Added Successfully',
-        'alert-type' => 'success',
-    ];
-
-    return redirect()->route('all.employee')->with($notification);
-}
 
 
     public function edit_employee($id)
     {
         $employee = Employee::findOrFail($id);
 
-        return view('employees.edit_employee',compact('employee'));
+        return view('employees.edit_employee', compact('employee'));
     }
 
-    public function update_employee(Request $request , $id)
+    public function update_employee(Request $request, $id)
     {
         $validatedData = $request->validate([
             'employee_name' => 'required|string|max:255',
@@ -100,17 +97,14 @@ class EmployeeController extends Controller
     public function delete_employee($id)
     {
         $employee = Employee::findOrFail($id);
-        if($employee)
-        {
+        if ($employee) {
             $employee->delete();
             $notification = array(
                 'message' => 'Employee Deleted Successfully',
                 'alert-type' => 'success',
             );
             return redirect()->back()->with($notification);
-        }
-        else
-        {
+        } else {
             $notification = array(
                 'message' => 'Something went wrong',
                 'alert-type' => 'error',
@@ -118,6 +112,4 @@ class EmployeeController extends Controller
             return redirect()->back()->with($notification);
         }
     }
-
-
 }
